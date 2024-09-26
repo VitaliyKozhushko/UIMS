@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: postgres-db
+    ports:
+      - '${PORT_DB}:${PORT_DB}'
+    environment:
+      - ENVIRONMENT=docker
+      - POSTGRES_DB=${NAME_DB}
+      - POSTGRES_USER=${USER_DB}
+      - POSTGRES_PASSWORD=${PASSWD_DB}
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${USER_DB} -d ${NAME_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend_app
+    volumes:
+      - ./backend:/app/backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=docker
+      - DATABASE_URL=postgresql+asyncpg://${USER_DB}:${PASSWD_DB}@${HOST_DB}:${PORT_DB}/${NAME_DB}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pgdata:
