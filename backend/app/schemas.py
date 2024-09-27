@@ -7,12 +7,12 @@ from enum import Enum
 def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
     return Enum(name, choices)
 
-StatusEnam = create_enum('StatusEnum', statuses)
-GenderEnam = create_enum('GenderEnam', genders)
+StatusEnum = create_enum('StatusEnum', statuses)
+GenderEnum = create_enum('GenderEnam', genders)
 
 class AppointmentsBase(BaseModel):
     id: int
-    status: StatusEnam
+    status: StatusEnum
     service_details: Optional[Dict[str, Any]]
     date_start: datetime
     date_end: datetime
@@ -28,7 +28,7 @@ class PatientsBase(BaseModel):
     id: int
     identifier: str
     fullname: str
-    gender: GenderEnam
+    gender: GenderEnum
     birthDate: datetime
     address: Optional[Dict[str, Any]]
 
