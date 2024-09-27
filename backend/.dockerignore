@@ -1,0 +1,33 @@
+# виртуальное окружение
+venv/
+.env/
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info
+*.log
+
+# системные файлы и файлы PyCharm
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+
+# тестовые и временные файлы
+tests/
+*.test.py
+*.tmp
+*.swp
+
+# данные и конфигурации PostgreSQL, если они есть в проекте
+pgdata/
+*.sql
+*.dump
+
+# настройки Alembic
+alembic.ini
+
+# Docker файлы
+docker-compose.yml
+Dockerfile
+*.dockerignore
