@@ -1,3 +1,32 @@
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Enum, JSON
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from constants import statuses
 
 Base = declarative_base()
+
+class Resources(Base):
+    __tablename__ = 'resources'
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String, nullable=False)
+    last_update = Column(TIMESTAMP(timezone=True), nullable=False)
+
+class Appointments(Base):
+    __tablename__ = 'appointments'
+
+    id = Column(Integer, primary_key=True, index=True)
+    status = Column(Enum(*statuses.key(), name='status_enum'), nullable=False)
+    service_details = Column(JSON) # serviceCategory, serviceType, specialty
+    date_start = Column(TIMESTAMP(timezone=True), nullable=False)
+    date_end = Column(TIMESTAMP(timezone=True), nullable=False)
+    description = Column(String)
+    participants = Column(JSON)
+    priority = Column(Integer)
+    resource_id = Column(Integer, ForeignKey('resources.id'))
+
+    resource = relationship('Resources')
+
+    @property
+    def status_description(self):
+        return statuses.get(self.status, statuses['entered-in-error'])
