@@ -3,7 +3,7 @@ FROM python:3.10-alpine
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
         postgresql-dev gcc musl-dev libpq-dev python3-dev
 
-WORKDIR /app
+WORKDIR /app/frontend
 
 COPY requirements.txt .
 
