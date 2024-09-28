@@ -1,6 +1,7 @@
 import React from "react";
 import main from '../asserts/scss/main.module.scss';
 import logo from '../asserts/img/logo/logo.png';
+import Auth from '../components/AuthForm';
 
 function Main() {
   return (
@@ -11,6 +12,9 @@ function Main() {
           <span className={main.short}>ЕИМС</span>
           <span className={main.full}>Единая информационная медицинская система</span>
         </div>
+      </div>
+      <div className={main.authBlock}>
+        <Auth css={main.auth} cssimg={main.authImg}/>
       </div>
     </div>
   );
