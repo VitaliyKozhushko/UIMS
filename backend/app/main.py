@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.database import create_db
 import logging
+from app.services.FHIR import get_appointments
+from app.routers import appointments
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,8 +17,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(appointments.router)
+
 @app.get("/")
 async def root():
+    await get_appointments()
     return {"message": "Hello World"}
 
 

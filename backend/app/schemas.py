@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import Dict, Any, Optional, Type
+from typing import Dict, Optional, Type
 from datetime import datetime
-from constants import statuses, genders
+from app.constants import statuses, genders
 from enum import Enum
 
 def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
@@ -13,12 +13,8 @@ GenderEnum = create_enum('GenderEnam', genders)
 class AppointmentsBase(BaseModel):
     id: int
     status: StatusEnum
-    service_details: Optional[Dict[str, Any]]
     date_start: datetime
-    date_end: datetime
     description: Optional[str] = None
-    participants: Optional[Dict[str, Any]] = None
-    priority: Optional[int] = None
 
 class AppointmentsResponse(AppointmentsBase):
     class Config:
@@ -26,11 +22,9 @@ class AppointmentsResponse(AppointmentsBase):
 
 class PatientsBase(BaseModel):
     id: int
-    identifier: str
     fullname: str
     gender: GenderEnum
     birthDate: datetime
-    address: Optional[Dict[str, Any]]
 
 class PatientsResponse(PatientsBase):
     class Config:
