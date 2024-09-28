@@ -35,6 +35,7 @@ class Patients(Base):
     __tablename__ = 'patients'
 
     id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(String, nullable=False)
     identifier = Column(String)
     fullname = Column(String, nullable=False)
     gender = Column(Enum(*genders.keys(), name='gender_name', nullable=False))

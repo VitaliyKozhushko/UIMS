@@ -1,22 +1,24 @@
 import httpx
-from app.models import Appointments, Resources
+from app.models import Appointments, Resources, Patients
 from app.database import get_db
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, exists
 
 # URL FIHR
 FHIR_URL = "https://hapi.fhir.org/baseR4/Appointment?_count=10"
 
 async def get_appointments():
+    """
+    Получение списка записей на прием
+    """
     async with httpx.AsyncClient() as client:
         response = await client.get(FHIR_URL)
         response.raise_for_status()
         data = response.json()
-        print('data:', data)
 
         async for db in get_db():
             try:
-                resource_id = await add_resources(db, 'Appointment', data['meta']['lastUpdated'])
+                resource_id = await check_resources(db, 'Appointment', data['meta']['lastUpdated'])
 
                 for item in data.get('entry', []):
                     resource = item.get('resource')
@@ -45,26 +47,98 @@ async def get_appointments():
                             resource_id=resource_id
                         )
                         db.add(new_appointment)
+                        await get_patient(db, resource.get('participant'))
 
                 await db.commit()
+            except Exception as e:
+                await db.rollback()
+                print(f"Ошибка при сохранении записи: {e}")
             finally:
                 await db.close()
 
-async def add_resources(db, resource, date):
-    existing_resource = await db.execute(
+async def check_resources(db, resource, date):
+    """
+    Проверка на существование типа ресурса в БД и добавление запрашиваемого ресурса в БД при его отсутствии
+    """
+    exist_resource = await db.execute(
         select(Resources).where(Resources.type == resource)
     )
-    existing_resource = existing_resource.scalars().first()
+    exist_resource = exist_resource.scalars().first()
 
-    if existing_resource:
-        existing_resource.last_update = datetime.fromisoformat(date.replace("Z", "+00:00"))
-        return existing_resource.id
+    if exist_resource:
+        exist_resource.last_update = datetime.fromisoformat(date.replace("Z", "+00:00"))
+        return exist_resource.id
     else:
         new_resource = Resources(
-            type='Appointment',
+            type=resource,
             last_update=datetime.fromisoformat(date.replace("Z", "+00:00"))
         )
         db.add(new_resource)
-        await db.flush()
+        await db.commit()
 
         return new_resource.id
+
+async def get_patient(db, patient_data):
+    """
+    Получение данных о пациенте
+    """
+    patient = patient_data[0].get('actor', {}).get('reference')
+    if not patient:
+        print('Отсутствует id пациента')
+        return
+
+    patient_id = patient.removeprefix('Patient/')
+
+    exist_patient = await db.execute(
+        select(exists().where(Patients.patient_id == patient_id))
+    )
+
+    if exist_patient.scalar():
+        print(f'Пациент с patient_id={patient_id} уже существует в БД')
+        return
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f'http://hapi.fhir.org/baseR4/Patient/{patient_id}')
+        response.raise_for_status()
+        data = response.json()
+
+        try:
+            resource_id = await check_resources(db, 'Patient', data['meta']['lastUpdated'])
+
+            fullname_patient = get_fullname(data.get('name', []))
+            birth_date = transform_birth_date(data.get('birthDate'))
+
+            new_patient = Patients(
+                patient_id=patient_id,
+                identifier=data.get('identifier', [{}])[0].get('value'),
+                fullname=fullname_patient,
+                gender=data.get('gender', 'unknown'),
+                birthDate=birth_date,
+                address=data.get('address', [{}])[0].get('text'),
+                resource_id=resource_id
+            )
+            db.add(new_patient)
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            print(f"Ошибка при сохранении пациента: {e}")
+
+def get_fullname(name):
+    """Получаем полное имя пациента."""
+    if len(name) == 0:
+        return 'н/д'
+    fullname_patient = name[0].get('text')
+    if not fullname_patient:
+        family_name = name[0].get('family', '')
+        given_name = ' '.join(name[0].get('given', []))
+        fullname_patient = f'{family_name} {given_name}'
+    return fullname_patient if not fullname_patient.isspace() else 'н/д'
+
+def transform_birth_date(birth_date_str):
+    """Преобразование даты рождения из строки в объект date"""
+    if birth_date_str:
+        try:
+            return datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            print(f'Неправильный формат даты: {birth_date_str}')
+    return None

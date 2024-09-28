@@ -27,6 +27,8 @@
 
 ## Прочее
 
+- предполагается, что актуальные данные о пациентах, после их добавления в БД из запроса. Т.е. не над каждый раз запрашивать данные о пациентах
+
 uvicorn main:app --reload
 alembic revision --autogenerate -m "Create initial tables"
 alembic upgrade head   
