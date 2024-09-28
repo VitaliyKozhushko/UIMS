@@ -4,15 +4,12 @@ from app.database import get_db
 from datetime import datetime
 from sqlalchemy import select, exists
 
-# URL FIHR
-FHIR_URL = "https://hapi.fhir.org/baseR4/Appointment?_count=10"
-
 async def get_appointments():
     """
     Получение списка записей на прием
     """
     async with httpx.AsyncClient() as client:
-        response = await client.get(FHIR_URL)
+        response = await client.get('https://hapi.fhir.org/baseR4/Appointment?_count=10')
         response.raise_for_status()
         data = response.json()
 
@@ -23,31 +20,9 @@ async def get_appointments():
                 for item in data.get('entry', []):
                     resource = item.get('resource')
                     if resource:
-                        service_details = []
-                        if 'serviceCategory' in resource:
-                            service_details.append({'serviceCategory': resource['serviceCategory']})
-                        if 'serviceType' in resource:
-                            service_details.append({'serviceType': resource['serviceType']})
-                        if 'specialty' in resource:
-                            service_details.append({'specialty': resource['specialty']})
-                        date_start = resource.get('start')
-                        date_stop = resource.get('stop')
-                        if isinstance(date_start, str):
-                            date_start = datetime.fromisoformat(date_start.replace("Z", "+00:00"))
-                        if isinstance(date_stop, str):
-                            date_stop = datetime.fromisoformat(date_stop.replace("Z", "+00:00"))
-                        new_appointment = Appointments(
-                            status=resource.get('status', 'entered-in-error'),
-                            service_details=service_details,
-                            date_start=date_start,
-                            date_end=date_stop,
-                            description=resource.get('description'),
-                            participants=resource.get('participant'),
-                            priority=resource.get('priority'),
-                            resource_id=resource_id
-                        )
-                        db.add(new_appointment)
+                        new_appointment = await create_appointment(db, resource, resource_id)
                         await get_patient(db, resource.get('participant'))
+                        db.add(new_appointment)
 
                 await db.commit()
             except Exception as e:
@@ -55,6 +30,42 @@ async def get_appointments():
                 print(f"Ошибка при сохранении записи: {e}")
             finally:
                 await db.close()
+
+async def create_appointment(db, resource, resource_id):
+    """
+    Создание новой записи на приём
+    """
+    service_details = extract_service_details(resource)
+    date_start = transform_start_end(resource.get('start'))
+    date_stop = transform_start_end(resource.get('end'))
+
+    return Appointments(
+        status=resource.get('status', 'entered-in-error'),
+        service_details=service_details,
+        date_start=date_start,
+        date_end=date_stop,
+        description=resource.get('description'),
+        participants=resource.get('participant'),
+        priority=resource.get('priority'),
+        resource_id=resource_id
+    )
+
+def extract_service_details(resource):
+    """Формирование данных о враче, специализации"""
+    service_details = []
+    if 'serviceCategory' in resource:
+        service_details.append({'serviceCategory': resource['serviceCategory']})
+    if 'serviceType' in resource:
+        service_details.append({'serviceType': resource['serviceType']})
+    if 'specialty' in resource:
+        service_details.append({'specialty': resource['specialty']})
+    return service_details
+
+def transform_start_end(date_str):
+    """Преобразование даты в TIMESTAMP"""
+    if isinstance(date_str, str):
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+    return date_str
 
 async def check_resources(db, resource, date):
     """
@@ -106,14 +117,14 @@ async def get_patient(db, patient_data):
             resource_id = await check_resources(db, 'Patient', data['meta']['lastUpdated'])
 
             fullname_patient = get_fullname(data.get('name', []))
-            birth_date = transform_birth_date(data.get('birthDate'))
+            upd_birth_date = transform_birth_date(data.get('birthDate'))
 
             new_patient = Patients(
                 patient_id=patient_id,
                 identifier=data.get('identifier', [{}])[0].get('value'),
                 fullname=fullname_patient,
                 gender=data.get('gender', 'unknown'),
-                birthDate=birth_date,
+                birth_date=upd_birth_date,
                 address=data.get('address', [{}])[0].get('text'),
                 resource_id=resource_id
             )

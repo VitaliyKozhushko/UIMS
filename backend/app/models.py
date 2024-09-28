@@ -39,7 +39,7 @@ class Patients(Base):
     identifier = Column(String)
     fullname = Column(String, nullable=False)
     gender = Column(Enum(*genders.keys(), name='gender_name', nullable=False))
-    birthDate = Column(DATE, nullable=False)
+    birth_date = Column(DATE, nullable=False)
     address = Column(JSON)
     resource_id = Column(Integer, ForeignKey('resources.id'))
 
