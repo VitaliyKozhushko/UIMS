@@ -18,8 +18,8 @@ class Appointments(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Enum(*statuses.keys(), name='status_enum'), nullable=False)
     service_details = Column(JSON) # serviceCategory, serviceType, specialty
-    date_start = Column(TIMESTAMP(timezone=True), nullable=False)
-    date_end = Column(TIMESTAMP(timezone=True), nullable=False)
+    date_start = Column(TIMESTAMP(timezone=True))
+    date_end = Column(TIMESTAMP(timezone=True))
     description = Column(String)
     participants = Column(JSON)
     priority = Column(Integer)
