@@ -1,6 +1,6 @@
 import React from "react";
-import main from '../asserts/scss/main.module.scss';
-import logo from '../asserts/img/logo/logo.png';
+import main from '../assets/scss/main.module.scss';
+import logo from '../assets/img/logo/logo.png';
 import Auth from '../components/AuthForm';
 
 function Main() {
