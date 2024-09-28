@@ -32,3 +32,6 @@
 uvicorn main:app --reload
 alembic revision --autogenerate -m "Create initial tables"
 alembic upgrade head   
+
+Добавить:
+alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000

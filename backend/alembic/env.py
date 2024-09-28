@@ -5,6 +5,9 @@ from alembic import context
 from app.models import Base
 import asyncio
 from app.database import DATABASE_URL
+from app.database import env
+from sqlalchemy import create_engine
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,7 +29,10 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+DATABASE_URL = f'postgresql://{env("USER_DB")}:{env("PASSWD_DB")}@{env("HOST_DB")}:{env("PORT_DB")}/{env("NAME_DB")}'
+
 config.set_main_option('sqlalchemy.url', DATABASE_URL)
+print(f'Using DATABASE_URL: {DATABASE_URL}')
 
 
 def run_migrations_offline() -> None:
@@ -53,35 +59,30 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-async def run_migrations_online() -> None:
+def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
 
     """
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+    connectable = create_engine(
+        config.get_main_option("sqlalchemy.url"),
+        poolclass=pool.NullPool
     )
 
-    async with connectable.connect() as connection:
-        await connection.run_sync(
-            lambda sync_conn: context.configure(
-                connection=sync_conn, target_metadata=target_metadata
-            )
+    with connectable.connect() as connection:
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True
         )
 
-        await connection.run_sync(
-            lambda sync_conn: (
-                context.begin_transaction(),
-                context.run_migrations()
-            )
-        )
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()
