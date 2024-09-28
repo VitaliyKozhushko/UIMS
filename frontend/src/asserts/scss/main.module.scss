@@ -1,0 +1,50 @@
+.page {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../img/images/back_main.jpg');
+  background-size: cover;
+  background-position: top 100px left 0;
+  background-repeat: no-repeat;
+
+  .logoBlock {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    width: 100%;
+    height: 100px;
+    gap: 10px;
+
+    .img {
+      display: block;
+      top: 15px;
+      left: 0;
+      width: 80px;
+      height: 80px;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      width: 200px;
+
+      & > span {
+        line-height: 1;
+      }
+
+      .short {
+        position: relative;
+        top: -8px;
+        font-size: 52px;
+        font-weight: 700;
+      }
+
+      .full {
+        position: relative;
+        top: -6px;
+        margin-left: 3px;
+        color: #8e8e8e;
+      }
+    }
+  }
+}
