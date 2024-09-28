@@ -24,8 +24,10 @@ class Appointments(Base):
     participants = Column(JSON)
     priority = Column(Integer)
     resource_id = Column(Integer, ForeignKey('resources.id'))
+    patient_id = Column(String, ForeignKey('patients.patient_id'))
 
     resource = relationship('Resources')
+    patient = relationship('Patients', back_populates='appointments')
 
     @property
     def status_title(self):
@@ -35,15 +37,14 @@ class Patients(Base):
     __tablename__ = 'patients'
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(String, nullable=False)
+    patient_id = Column(String, unique=True, nullable=False)
     identifier = Column(String)
     fullname = Column(String, nullable=False)
     gender = Column(Enum(*genders.keys(), name='gender_name', nullable=False))
     birth_date = Column(DATE, nullable=False)
     address = Column(JSON)
-    resource_id = Column(Integer, ForeignKey('resources.id'))
 
-    resource = relationship('Resources')
+    appointments = relationship('Appointments', back_populates='patient')
 
     @property
     def gender_title(self):

@@ -20,9 +20,10 @@ async def get_appointments():
                 for item in data.get('entry', []):
                     resource = item.get('resource')
                     if resource:
-                        new_appointment = await create_appointment(db, resource, resource_id)
-                        await get_patient(db, resource.get('participant'))
-                        db.add(new_appointment)
+                        patient_id = await get_patient(db, resource.get('participant'))
+                        if patient_id:
+                            new_appointment = await create_appointment(resource, resource_id, patient_id )
+                            db.add(new_appointment)
 
                 await db.commit()
             except Exception as e:
@@ -31,7 +32,7 @@ async def get_appointments():
             finally:
                 await db.close()
 
-async def create_appointment(db, resource, resource_id):
+async def create_appointment(resource, resource_id, patient_id):
     """
     Создание новой записи на приём
     """
@@ -47,7 +48,8 @@ async def create_appointment(db, resource, resource_id):
         description=resource.get('description'),
         participants=resource.get('participant'),
         priority=resource.get('priority'),
-        resource_id=resource_id
+        resource_id=resource_id,
+        patient_id=patient_id
     )
 
 def extract_service_details(resource):
@@ -105,8 +107,7 @@ async def get_patient(db, patient_data):
     )
 
     if exist_patient.scalar():
-        print(f'Пациент с patient_id={patient_id} уже существует в БД')
-        return
+        return patient_id
 
     async with httpx.AsyncClient() as client:
         response = await client.get(f'http://hapi.fhir.org/baseR4/Patient/{patient_id}')
@@ -114,8 +115,6 @@ async def get_patient(db, patient_data):
         data = response.json()
 
         try:
-            resource_id = await check_resources(db, 'Patient', data['meta']['lastUpdated'])
-
             fullname_patient = get_fullname(data.get('name', []))
             upd_birth_date = transform_birth_date(data.get('birthDate'))
 
@@ -125,11 +124,11 @@ async def get_patient(db, patient_data):
                 fullname=fullname_patient,
                 gender=data.get('gender', 'unknown'),
                 birth_date=upd_birth_date,
-                address=data.get('address', [{}])[0].get('text'),
-                resource_id=resource_id
+                address=data.get('address', [{}])[0].get('text')
             )
             db.add(new_patient)
             await db.commit()
+            return patient_id
         except Exception as e:
             await db.rollback()
             print(f"Ошибка при сохранении пациента: {e}")
