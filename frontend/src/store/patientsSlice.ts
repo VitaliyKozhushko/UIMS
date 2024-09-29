@@ -1,11 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-interface Patient {
+export interface Appointment {
   id: number;
-  patientName: string;
-  date: string;
+  status: string;
+  date_start: string;
   description: string;
+}
+
+export interface Patient {
+  id: number;
+  fullname: string;
+  gender: string;
+  birth_date: string;
+  appointments: Appointment[];
 }
 
 interface PatientsState {

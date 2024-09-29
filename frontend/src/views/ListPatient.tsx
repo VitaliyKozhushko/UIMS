@@ -19,7 +19,7 @@ function ListPatient() {
   return (
     <div className={patient.page}>
       {patients.map((patient) => (
-        <CardItem key={patient.id} mainCss='patient'/>
+        <CardItem key={patient.id} mainCss='patient' data={patient}/>
         ))}
     </div>
   )
