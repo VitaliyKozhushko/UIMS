@@ -30,7 +30,7 @@ function ListPatient() {
       <div>
         <Button variant="filled" onClick={handleLogout}>Выход</Button>
       </div>
-      <div>
+      <div className={patient.listBlock}>
         {patients.map((patient) => (
         <CardItem key={patient.id} mainCss='patient' data={patient}/>
         ))}

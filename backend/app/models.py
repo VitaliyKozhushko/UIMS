@@ -10,7 +10,7 @@ class Resources(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String, nullable=False)
-    last_update = Column(TIMESTAMP(timezone=True), nullable=False)
+    last_update = Column(TIMESTAMP(timezone=True))
 
 class Appointments(Base):
     __tablename__ = 'appointments'
