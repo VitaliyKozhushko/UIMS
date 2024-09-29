@@ -1,0 +1,36 @@
+{
+  "id": "adf90f40-2eaf-42dc-8d4e-8d5e7f398ce9",
+  "meta": {
+    "versionId": "7231",
+    "lastUpdated": "2024-05-27T15:39:22.204026+03:00"
+  },
+  "name": [
+    {
+      "use": "official",
+      "text": "Васин Вася Васильевич",
+      "given": [
+        "Вася",
+        "Васильевич"
+      ],
+      "family": "Васин"
+    }
+  ],
+  "gender": "male",
+  "address": [
+    {
+      "use": "home",
+      "line": [
+        "Тестовый адрес"
+      ],
+      "text": "Тестовый адрес"
+    }
+  ],
+  "birthDate": "2000-10-10",
+  "identifier": [
+    {
+      "value": "123-123-123 45",
+      "system": "urn:oid:1.2.643.100.3"
+    }
+  ],
+  "resourceType": "Patient"
+}
