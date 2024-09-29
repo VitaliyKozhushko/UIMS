@@ -16,12 +16,10 @@ function CollapseAccordion(props: CollapseProps) {
       <Collapse in={isOpen}>
         <Accordion>
           {appointments.map((appointment) => (
-            <>
-              <Accordion.Item key={appointment.id} value={String(appointment.id)}>
-                <Accordion.Control>{transformDate(appointment.date_start, true)} {appointment.status}</Accordion.Control>
-                <Accordion.Panel>{appointment.description}</Accordion.Panel>
-              </Accordion.Item>
-            </>
+            <Accordion.Item key={appointment.id} value={String(appointment.id)}>
+              <Accordion.Control>{transformDate(appointment.date_start, true)} {appointment.status}</Accordion.Control>
+              <Accordion.Panel>{appointment.description}</Accordion.Panel>
+            </Accordion.Item>
             ))}
         </Accordion>
       </Collapse>
