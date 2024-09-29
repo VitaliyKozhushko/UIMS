@@ -1,27 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { Button } from '@mantine/core';
+import Main from './views/Main';
+import ListPatient from './views/ListPatient'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './store';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo"/>
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-      <Button variant="filled">Button</Button>
-    </div>
+    <BrowserRouter>
+      <Provider store={store}>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Main/>}/>
+            <Route path="/lk" element={<ListPatient/>}/>
+          </Routes>
+        </div>
+      </Provider>
+    </BrowserRouter>
   );
 }
 

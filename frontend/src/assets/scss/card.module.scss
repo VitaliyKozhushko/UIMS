@@ -1,0 +1,28 @@
+.patient {
+  width: 300px;
+
+  .avatarBlock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+  }
+
+  .infoPatient {
+    display: flex;
+    flex-direction: column;
+
+    .infoPatientItem {
+      display: flex;
+      gap: 7px;
+    }
+  }
+
+  .btnAppointment {
+    .countAppointment {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+    }
+  }
+}

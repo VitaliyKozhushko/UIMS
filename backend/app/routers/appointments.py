@@ -1,39 +1,47 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.future import select
 from typing import List
-from app.models import Appointments, Patients
-from app.schemas import AppointmentsBase, PatientsBase, BaseModel
+from app.models import Patients, Appointments
+from app.schemas import AppointmentsResponse, PatientsResponse, PatientAppointmentsResponse
 from app.database import get_db
-from app.constants import statuses, genders
 
 router = APIRouter()
 
-class PatientAppointmentsResponse(BaseModel):
-    patient: PatientsBase
-    appointments: List[AppointmentsBase]
-
 @router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse])
-async def get_all_patients_appointments(db: Session = Depends(get_db)):
-    result = []
+async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)):
+    async with db.begin():
+        patients_result = await db.execute(select(Patients).options(selectinload(Patients.appointments)))
+        patients = patients_result.scalars().fetchall()
 
-    patients_result = await db.execute(select(Patients).options(selectinload(Patients.appointments)))
-    patients = patients_result.scalars().fetchall()
+        result = [transform_patient_appointments(patient) for patient in patients]
+        await db.commit()
+        return result
 
-    for patient in patients:
-        result.append(PatientAppointmentsResponse(
-            patient=PatientsBase(
-                id=patient.id,
-                fullname=patient.fullname,
-                gender=genders.get(patient.gender, 'unknown'),
-                birthDate=patient.birth_date
-            ),
-            appointments=[AppointmentsBase(
-                id=appointment.id,
-                status=statuses.get(appointment.status, 'entered-in-error'),
-                date_start=appointment.date_start,
-                description=appointment.description
-            ) for appointment in patient.appointments]
-        ))
+def transform_patient_appointments(patient: Patients) -> PatientAppointmentsResponse:
+    """
+    Преобразование пациента и его записи в Pydantic модель для ответа
+    """
+    patient_copy = PatientsResponse.model_validate(patient, from_attributes=True)
 
-    return result
+    appointments_data = [
+        transform_appointment(appointment) for appointment in patient.appointments
+    ]
+
+    return PatientAppointmentsResponse(
+        id=patient.id,
+        fullname=patient_copy.fullname,
+        gender=patient_copy.gender,
+        birth_date=patient_copy.birth_date,
+        appointments=appointments_data
+    )
+
+
+def transform_appointment(appointment: Appointments) -> AppointmentsResponse:
+    """
+    Преобразование записи в Pydantic модель с обработкой статуса
+    """
+    appointment_copy = AppointmentsResponse.model_validate(appointment, from_attributes=True)
+
+    return appointment_copy
