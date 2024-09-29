@@ -1,17 +1,19 @@
-import React, {useEffect} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import CardItem from '../components/CardItem';
 import patient from '../assets/scss/listPatients.module.scss';
 import {fetchPatients} from "../store/patientsSlice";
-import { RootState, AppDispatch } from '../store';
-import { Button } from '@mantine/core';
-import {Navigate, useNavigate} from "react-router-dom";
+import {RootState, AppDispatch} from '../store';
+import {Button} from '@mantine/core';
+import {useNavigate} from "react-router-dom";
 
 function ListPatient() {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { patients, loading, error } = useSelector((state: RootState) => state.patients);
+  const {patients, loading, error} = useSelector((state: RootState) => state.patients);
+
+  const [activeCard, setActiveCard] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(fetchPatients());
@@ -25,6 +27,10 @@ function ListPatient() {
     navigate('/')
   }
 
+  function toggleCard(id: number) {
+    setActiveCard((prev) => (prev === id ? null : id));
+  }
+
   return (
     <div className={patient.page}>
       <div>
@@ -32,7 +38,12 @@ function ListPatient() {
       </div>
       <div className={patient.listBlock}>
         {patients.map((patient) => (
-        <CardItem key={patient.id} mainCss='patient' data={patient}/>
+          <CardItem
+            key={patient.id}
+            mainCss='patient'
+            data={patient}
+            isOpen={activeCard === patient.id}
+            onToggle={() => toggleCard(patient.id)}/>
         ))}
       </div>
     </div>
