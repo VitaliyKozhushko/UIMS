@@ -2,11 +2,10 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.database import create_db
 import logging
-from app.services.FHIR import get_appointments
 from app.routers import appointments
 from fastapi.middleware.cors import CORSMiddleware
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
@@ -35,7 +34,6 @@ app.include_router(appointments.router)
 
 @app.get("/")
 async def root():
-    await get_appointments()
     return {"message": "Hello World"}
 
 

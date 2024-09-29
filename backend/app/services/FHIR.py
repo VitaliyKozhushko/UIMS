@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from app.models import Appointments, Resources, Patients
 from app.database import get_db
 from datetime import datetime
-from sqlalchemy import select, exists
+from sqlalchemy import select, exists, delete
 from pathlib import Path
 
 
@@ -28,6 +28,14 @@ async def get_appointments():
     try:
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
 
+      if not resource_id:
+        return
+
+      # Удаляем старые данные
+      await db.execute(delete(Appointments))
+      await db.execute(delete(Patients))
+      await db.commit()
+
       for item in data.get('entry', []):
         resource = item.get('resource')
         if resource:
@@ -37,6 +45,7 @@ async def get_appointments():
             db.add(new_appointment)
 
       await db.commit()
+      print('Данные сохранены')
     except Exception as e:
       await db.rollback()
       print(f"Ошибка при сохранении записи: {e}")
@@ -93,9 +102,13 @@ async def check_resources(db, resource, meta):
     select(Resources).where(Resources.type == resource)
   )
   exist_resource = exist_resource.scalars().first()
+  transform_date = datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
+
+  if transform_date and exist_resource.last_update == transform_date:
+    return
 
   if exist_resource:
-    exist_resource.last_update = datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
+    exist_resource.last_update = transform_date
     return exist_resource.id
   else:
     new_resource = Resources(
