@@ -4,16 +4,10 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.future import select
 from typing import List
 from app.models import Patients, Appointments
-from app.schemas import AppointmentsResponse, PatientsResponse, BaseModel
+from app.schemas import AppointmentsResponse, PatientsResponse, PatientAppointmentsResponse
 from app.database import get_db
-from app.constants import statuses, genders
 
 router = APIRouter()
-
-class PatientAppointmentsResponse(BaseModel):
-    id: int
-    patient: PatientsResponse
-    appointments: List[AppointmentsResponse]
 
 @router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse])
 async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)):
@@ -37,7 +31,9 @@ def transform_patient_appointments(patient: Patients) -> PatientAppointmentsResp
 
     return PatientAppointmentsResponse(
         id=patient.id,
-        patient=patient_copy,
+        fullname=patient_copy.fullname,
+        gender=patient_copy.gender,
+        birth_date=patient_copy.birth_date,
         appointments=appointments_data
     )
 

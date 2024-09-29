@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, Optional, Type
+from typing import Dict, Optional, Type, List
 from datetime import datetime
 from app.constants import statuses, genders
 from enum import Enum
@@ -37,3 +37,10 @@ class PatientsResponse(PatientsBase):
     @field_validator('gender', mode='before')
     def convert_gender(cls, value):
         return genders.get(value, 'Не указан')
+
+class PatientAppointmentsResponse(BaseModel):
+    id: int
+    fullname: str
+    gender: str
+    birth_date: datetime
+    appointments: List[AppointmentsResponse]
