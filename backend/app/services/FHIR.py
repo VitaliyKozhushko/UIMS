@@ -157,7 +157,7 @@ async def get_patient(db, patient_data, resourse_offline):
   if exist_patient.scalar():
     return patient_id
 
-  if resourseOffline:
+  if resourse_offline:
     try:
       backup_directory = Path(__file__).resolve().parent.parent / 'backup'
       with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r') as file:

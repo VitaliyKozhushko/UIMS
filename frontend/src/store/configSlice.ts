@@ -1,6 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
-import {fetchPatients} from "./patientsSlice";
 
 interface ConfigState {
   offline: boolean;
@@ -21,8 +20,8 @@ const initialState: ConfigState = {
 
 export const updateOffline = createAsyncThunk(
   'config/updateOffline',
-  async ({ offline, resource }: UpdateOfflineParams) => {
-    const response = await axios.patch(`${process.env.REACT_APP_API_URL}/resources/${resource}`, { offline });
+  async ({offline, resource}: UpdateOfflineParams) => {
+    const response = await axios.patch(`${process.env.REACT_APP_API_URL}/resources/${resource}`, {offline});
     return response.data;
   }
 );
@@ -52,6 +51,12 @@ const configSlice = createSlice({
       .addCase(updateOffline.fulfilled, (state, action) => {
         state.offline = action.payload.offline;
         state.resource = action.payload.type;
+        state.loadingConfig = false;
+      })
+      .addCase(getOffline.rejected, (state) => {
+        state.loadingConfig = false;
+      })
+      .addCase(updateOffline.rejected, (state) => {
         state.loadingConfig = false;
       });
   },

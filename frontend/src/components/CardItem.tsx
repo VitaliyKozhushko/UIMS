@@ -6,10 +6,10 @@ import CollapseAccordion from './CollapseAccordion';
 import {transformDate} from '../utils';
 
 interface CardProps {
-  mainCss: string,
-  data: Patient,
-  isOpen: boolean,
-  onToggle: () => void
+  mainCss: string;
+  data: Patient;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function CardItem(props: CardProps) {

@@ -1,29 +1,55 @@
-# Задание
+# Тестовое задание
 
-**FHIR** - стандарт, описывающий объекты в области медицины в виде ресурсов. В задаче будут использованы 2 типа:
+Вывести список из пациентов в виде карточек
 
-**Patient** - содержит информацию о пациенте (http://hl7.org/fhir/R4/patient.html);
-**Appointment** - определяет запись пациента на прием к врачу (http://hl7.org/fhir/R4/appointment.html);
+## Содержание
+1. [Требования](#main_requirements)
+2. [Стек технологий](#technology_stack)
+3. [Документация по API](#doc_api)
+4. [Инструкция по запуску проекта](#instruction_startup)
+5. [Особенности](#features)
 
-Необходимо вывести список из пациентов в виде карточек, в которых должна содержаться следующая информация:
+## Требования <a name="main_requirements"></a>
 
-* имя пациента - `Patient.name[0].text`. Если поле текст отсутствует, то собрать имя конкатенацией `Patient.name[0].family` и `Patient.name[0].given`;
-* пол - `Patient.gender`;
-* дата рождения - `Patient.birthDate`;
-* количество записей на прием - количество ресурсов `Appointment`, которые имеют ссылку на конкретного пациента;
-* дата и время приема - `Appointment.start` и `Appointment.description` для каждого `Appointment`;
+- Основное
 
-# API
+    **FHIR** - стандарт, описывающий объекты в области медицины в виде ресурсов. В задаче будут использованы 2 типа:
+    
+    **Patient** - содержит информацию о пациенте (http://hl7.org/fhir/R4/patient.html);
+    **Appointment** - определяет запись пациента на прием к врачу (http://hl7.org/fhir/R4/appointment.html);
+    
+    Необходимо вывести список из пациентов в виде карточек, в которых должна содержаться следующая информация:
+    
+    * имя пациента - `Patient.name[0].text`. Если поле текст отсутствует, то собрать имя конкатенацией `Patient.name[0].family` и `Patient.name[0].given`;
+    * пол - `Patient.gender`;
+    * дата рождения - `Patient.birthDate`;
+    * количество записей на прием - количество ресурсов `Appointment`, которые имеют ссылку на конкретного пациента;
+    * дата и время приема - `Appointment.start` и `Appointment.description` для каждого `Appointment`;
 
-Для получения записей на прием - https://hapi.fhir.org/baseR4/Appointment?_count=10
-Для полученя пациентов - http://hapi.fhir.org/baseR4/Patient/{PatientID}. `PatientID` взять из `Appointment.participant[].actor.reference` и сделать подзапрос.
+- API
 
-Обратите внимание, для одного пациента может быть несколько записей.
+  Для получения записей на прием - https://hapi.fhir.org/baseR4/Appointment?_count=10
+  Для полученя пациентов - http://hapi.fhir.org/baseR4/Patient/{PatientID}. `PatientID` взять из `Appointment.participant[].actor.reference` и сделать подзапрос.
+    
+  Обратите внимание, для одного пациента может быть несколько записей.
 
-# Примечание
+- Примечание
 
-В случае недоступности тестового сервера необходимо использовать приложенные тестовые ресурсы Appointment и Patient (в файлах *.json). Получение ресурсов можно эмулировать любым удобным способом при условии, что сохраняется асинхронный режим получения их, как если работа велась бы с реальным HTTP сервером.
+    В случае недоступности тестового сервера необходимо использовать приложенные тестовые ресурсы Appointment и Patient (в файлах *.json). Получение ресурсов можно эмулировать любым удобным способом при условии, что сохраняется асинхронный режим получения их, как если работа велась бы с реальным HTTP сервером.
 
+## Стэк технологий <a name="technology_stack"></a>
+
+- Backend: [FastAPI](https://fastapi.tiangolo.com/)
+- Database: [PostgreSQL](https://www.postgresql.org/)
+- Frontend: [ReactJS](https://react.dev/)
+- State Management: [Redux](https://redux.js.org/)
+- Type System: [Typescript](https://www.typescriptlang.org/)
+- UI Library: [ManTine](https://ui.mantine.dev/)
+
+## Документация по API <a name="doc_api"></a>
+
+- Swagger: http://localhost:8000/swagger/
+- Redoc: http://localhost:8000/redoc/
 
 ## Прочее
 
@@ -34,9 +60,48 @@
 - если один из запросов не подгрузится, то загрузятся данные из json-файла
 - иммитация обрыва сети через фронт
 
-uvicorn main:app --reload
-alembic revision --autogenerate -m "Create initial tables"
-alembic upgrade head   
+## Инструкция по запуску проекта <a name="instruction_startup"></a>
 
-Добавить:
-alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000
+- NodeJS v.20.17.0
+- NPM v.10.8.2
+
+1. Клонируйте репозиторий
+```
+git clone https://github.com/VitaliyKozhushko/chat_app
+```
+2. Настройте .env файл:
+   - для бэка: в папке backend/
+   - также для бэка создать .env.backend.docker для работы с docker
+   - для фронта: в папке frontend/
+3. Запустите проект:
+   - либо в ручном режиме:
+        - перейти в папку backend (предварительно активировать виртуальное окружение)
+          ```shell
+          pip install -r requirements.txt
+          python create_common_env.py
+          uvicorn app.main:app --reload
+          ```
+        - перейти в папку frontend
+          ```shell
+          npm start
+          ```
+   - либо с помощью docker (в корне репозитория, на уровне docker-compose.yml запустить исполняемый файл)
+     ```shell
+     ./start.sh
+     ```
+     
+## Особенности <a name="features"></a>
+
+- авторизация сделана упрощенная: в localStorage сохраняется время входа. По истечении 15 минут разлогинивает при 
+  попытке обновить страницу
+- изначально загружаются данные с online-ресурса
+- для иммитации недоступности ресурса, кликнуть по кнопке "Offlline" в лк и перезагрузить страницу. В этом случае, данные
+  в таблицах записей и пациентов удаляться и заново запишутся из json-файла.
+- при выключении режима иммитации, надо также перезагрузить страницу
+- логика на бэке:
+  - проверятся значение переключателя offline
+  - если offline = True, то исп. в кач-ве ресурса json-файлы
+  - если offline = Falce, то запрашиваем online ресурс
+    - если какой-либо ресурс недоступен, то загружаем данные из json-файла
+  - при получении данных, сохраняем их БД
+  - формируем ответ на основании данных из БД и отправляем клиенту

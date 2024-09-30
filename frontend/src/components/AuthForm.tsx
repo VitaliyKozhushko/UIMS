@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 interface CustomProps {
   css: string;
-  cssimg: string
+  cssimg: string;
 }
 
 type AuthFormProps = PaperProps & CustomProps;
