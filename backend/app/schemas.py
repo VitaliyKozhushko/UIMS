@@ -48,13 +48,15 @@ class PatientAppointmentsResponse(BaseModel):
 class ResourseBase(BaseModel):
     pass
 
+class OfflineUpdateRequest(BaseModel):
+    offline: bool
+
 class OfflineUpdate(ResourseBase):
     offline: bool
     type: Optional[str] = None
 
     class Config:
         from_attributes = True
-
 
 class OfflineResponse(ResourseBase):
     offline: bool
