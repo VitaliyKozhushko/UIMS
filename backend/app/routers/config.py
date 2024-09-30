@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.schemas import OfflineResponse, OfflineUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.crud import get_offline_status, update_offline_status
+from app.crud import get_resource_data, update_offline_status
 
 router = APIRouter()
 
 @router.get("/resources/{resource_type}", response_model=OfflineResponse)
 async def get_resource(resource_type: str, db: AsyncSession = Depends(get_db)):
-    resource = await get_offline_status(db, resource_type)
+    resource = await get_resource_data(db, resource_type)
     if not resource:
         raise HTTPException(status_code=404, detail="Ресурс не найден")
     return resource

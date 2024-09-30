@@ -11,21 +11,36 @@ async def get_appointments():
   """
   Получение списка записей на прием
   """
-  try:
-    async with httpx.AsyncClient() as client:
-      response = await client.get('https://hapi.fhir.org/baseR4/Appointment?_count=10')
-      response.raise_for_status()
-      data = response.json()
-  except (httpx.RequestError, httpx.HTTPStatusError):
-    try:
-      backup_directory = Path(__file__).resolve().parent.parent / 'backup'
-      with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r') as file:
-        data = json.load(file)
-    except FileNotFoundError:
-      raise HTTPException(status_code=500, detail="Сторонний ресурс недоступен, файл с записями на прием не найден.")
-
   async for db in get_db():
     try:
+      resource = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
+      resource = resource.scalar_one_or_none()
+      resourse_offline = resource and resource.offline
+
+      if resourse_offline:
+        backup_directory = Path(__file__).resolve().parent.parent / 'backup'
+        try:
+          with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r') as file:
+            data = json.load(file)
+        except FileNotFoundError:
+          raise HTTPException(status_code=500, detail="Файл с записями на прием не найден.")
+      else:
+        try:
+          async with httpx.AsyncClient() as client:
+            response = await client.get('https://hapi.fhir.org/baseR4/Appointment?_count=10')
+            response.raise_for_status()
+            data = response.json()
+        except (httpx.RequestError, httpx.HTTPStatusError):
+          try:
+            backup_directory = Path(__file__).resolve().parent.parent / 'backup'
+            with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r') as file:
+              data = json.load(file)
+          except FileNotFoundError:
+            raise HTTPException(status_code=500,
+                                detail="Сторонний ресурс недоступен, файл с записями на прием не найден.")
+          except Exception as e:
+            print(f'Ошибка {e}')
+
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
 
       if not resource_id:
@@ -39,7 +54,7 @@ async def get_appointments():
       for item in data.get('entry', []):
         resource = item.get('resource')
         if resource:
-          patient_id = await get_patient(db, resource.get('participant'))
+          patient_id = await get_patient(db, resource.get('participant'), resourse_offline)
           if patient_id:
             new_appointment = await create_appointment(resource, resource_id, patient_id)
             db.add(new_appointment)
@@ -101,10 +116,10 @@ async def check_resources(db, resource, meta):
   exist_resource = await db.execute(
     select(Resources).where(Resources.type == resource)
   )
-  exist_resource = exist_resource.scalars().first() or {}
+  exist_resource = exist_resource.scalars().first()
   transform_date = datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
 
-  if transform_date and exist_resource.get('last_update') == transform_date:
+  if transform_date and exist_resource and exist_resource.last_update == transform_date:
     return
 
   if exist_resource:
@@ -121,7 +136,7 @@ async def check_resources(db, resource, meta):
     return new_resource.id
 
 
-async def get_patient(db, patient_data):
+async def get_patient(db, patient_data, resourse_offline):
   """
   Получение данных о пациенте
   """
@@ -142,12 +157,7 @@ async def get_patient(db, patient_data):
   if exist_patient.scalar():
     return patient_id
 
-  try:
-    async with httpx.AsyncClient() as client:
-      response = await client.get(f'http://hapi.fhir.org/baseR4/Patient/{patient_id}')
-      response.raise_for_status()
-      data = response.json()
-  except (httpx.RequestError, httpx.HTTPStatusError):
+  if resourseOffline:
     try:
       backup_directory = Path(__file__).resolve().parent.parent / 'backup'
       with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r') as file:
@@ -155,6 +165,20 @@ async def get_patient(db, patient_data):
     except FileNotFoundError:
       raise HTTPException(status_code=500,
                           detail="Сторонний ресурс недоступен, файл с данными о пациенте не найден.")
+  else:
+    try:
+      async with httpx.AsyncClient() as client:
+        response = await client.get(f'http://hapi.fhir.org/baseR4/Patient/{patient_id}')
+        response.raise_for_status()
+        data = response.json()
+    except (httpx.RequestError, httpx.HTTPStatusError):
+      try:
+        backup_directory = Path(__file__).resolve().parent.parent / 'backup'
+        with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r') as file:
+          data = json.load(file)
+      except FileNotFoundError:
+        raise HTTPException(status_code=500,
+                            detail="Сторонний ресурс недоступен, файл с данными о пациенте не найден.")
 
   try:
       fullname_patient = get_fullname(data.get('name', []))
