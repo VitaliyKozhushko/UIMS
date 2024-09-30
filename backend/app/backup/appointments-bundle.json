@@ -1,0 +1,289 @@
+{
+  "type": "searchset",
+  "total": 6,
+  "entry": [
+    {
+      "resource": {
+        "start": "2023-12-15T06:45:00.000Z",
+        "status": "fulfilled",
+        "description": "7003007 Рентгенография черепа",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/adf90f40-2eaf-42dc-8d4e-8d5e7f398ce9",
+              "display": "Васин Вася Васильевич"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "PractitionerRole/54eaae25-e137-4647-963e-aa7ccdea9679",
+              "display": "Doctor D D"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "7003007",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1471",
+                "display": "Рентгенография черепа"
+              }
+            ]
+          }
+        ],
+        "id": "57beb0ab-70f6-4560-a81b-2f4256be84b6",
+        "meta": {
+          "lastUpdated": "2023-12-15T09:34:48.451628+03:00",
+          "versionId": 4434
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/57beb0ab-70f6-4560-a81b-2f4256be84b6"
+    },
+    {
+      "resource": {
+        "start": "2023-12-21T15:00:00.000Z",
+        "status": "booked",
+        "description": "7003007 Рентгенография черепа",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/adf90f40-2eaf-42dc-8d4e-8d5e7f398ce9",
+              "display": "Васин Вася Васильевич"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "7003007",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1471",
+                "display": "Рентгенография черепа"
+              }
+            ]
+          }
+        ],
+        "id": "1a3f7563-ffb4-4895-a8e4-b113a248ac78",
+        "meta": {
+          "lastUpdated": "2023-12-21T17:52:34.560670+03:00",
+          "versionId": 4462
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/1a3f7563-ffb4-4895-a8e4-b113a248ac78"
+    },
+    {
+      "resource": {
+        "start": "2023-12-21T15:15:00.000Z",
+        "status": "booked",
+        "description": "7003007 Рентгенография черепа",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/adf90f40-2eaf-42dc-8d4e-8d5e7f398ce9",
+              "display": "Васин Вася Васильевич"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "7003007",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1471",
+                "display": "Рентгенография черепа"
+              }
+            ]
+          }
+        ],
+        "id": "015d4c37-69dd-4642-a4af-bf8d28fac369",
+        "meta": {
+          "lastUpdated": "2023-12-21T17:59:32.567597+03:00",
+          "versionId": 4471
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/015d4c37-69dd-4642-a4af-bf8d28fac369"
+    },
+    {
+      "resource": {
+        "start": "2024-04-26T12:00:00.000Z",
+        "status": "fulfilled",
+        "description": "A06.20.004 Маммография",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/9761455f-f1e6-48a6-8559-bc1a36242234",
+              "display": "Тестова Теста Тестовна"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "PractitionerRole/54eaae25-e137-4647-963e-aa7ccdea9679",
+              "display": "Doctor D D"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "A06.20.004",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1070",
+                "display": "Маммография"
+              }
+            ]
+          }
+        ],
+        "id": "5f0be59a-1590-470f-bd32-1ce45a9adf15",
+        "meta": {
+          "lastUpdated": "2024-04-26T15:14:07.696926+03:00",
+          "versionId": 7199
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/5f0be59a-1590-470f-bd32-1ce45a9adf15"
+    },
+    {
+      "resource": {
+        "start": "2024-04-26T12:15:00.000Z",
+        "status": "booked",
+        "description": "A06.20.004 Маммография",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/9761455f-f1e6-48a6-8559-bc1a36242234",
+              "display": "Тестова Теста Тестовна"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "A06.20.004",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1070",
+                "display": "Маммография"
+              }
+            ]
+          }
+        ],
+        "id": "01125921-82fc-41ba-8aa8-6dcc5ab54410",
+        "meta": {
+          "lastUpdated": "2024-04-26T14:52:42.758986+03:00",
+          "versionId": 7138
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/01125921-82fc-41ba-8aa8-6dcc5ab54410"
+    },
+    {
+      "resource": {
+        "start": "2024-04-01T14:45:00.000Z",
+        "status": "fulfilled",
+        "description": "7003379 Рентгенография молочной железы",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/adf90f40-2eaf-42dc-8d4e-8d5e7f398ce9",
+              "display": "Васин Вася Васильевич"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "Device/d7ce93c3-4bc1-4d25-9549-401f99f6f0c4",
+              "display": "Test Device"
+            },
+            "status": "accepted",
+            "required": "required"
+          },
+          {
+            "actor": {
+              "reference": "PractitionerRole/54eaae25-e137-4647-963e-aa7ccdea9679",
+              "display": "Doctor D D"
+            },
+            "status": "accepted",
+            "required": "required"
+          }
+        ],
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "code": "7003379",
+                "system": "urn:oid:1.2.643.5.1.13.13.11.1471",
+                "display": "Рентгенография молочной железы"
+              }
+            ]
+          }
+        ],
+        "id": "b7616c70-d7db-4649-b2ae-07ff3e0e7605",
+        "meta": {
+          "lastUpdated": "2024-04-26T15:13:49.766716+03:00",
+          "versionId": 7182
+        },
+        "resourceType": "Appointment"
+      },
+      "fullUrl": "http://localhost/ris/fhir/Appointment/b7616c70-d7db-4649-b2ae-07ff3e0e7605"
+    }
+  ],
+  "resourceType": "Bundle"
+}

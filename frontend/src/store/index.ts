@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import patientsReducer from './patientsSlice';
+import configReducer from './configSlice';
 
 const store = configureStore({
   reducer: {
     patients: patientsReducer,
+    config: configReducer
   },
 });
 

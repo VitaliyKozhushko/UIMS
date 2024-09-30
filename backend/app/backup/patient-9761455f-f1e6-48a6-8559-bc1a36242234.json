@@ -1,0 +1,27 @@
+{
+  "id": "9761455f-f1e6-48a6-8559-bc1a36242234",
+  "meta": {
+    "versionId": "7124",
+    "lastUpdated": "2024-04-24T16:41:33.594263+03:00"
+  },
+  "name": [
+    {
+      "use": "official",
+      "text": "Тестова Теста Тестовна",
+      "given": [
+        "Теста",
+        "Тестовна"
+      ],
+      "family": "Тестова"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1991-01-08",
+  "identifier": [
+    {
+      "value": "123-345-566 77",
+      "system": "urn:oid:1.2.643.100.3"
+    }
+  ],
+  "resourceType": "Patient"
+}

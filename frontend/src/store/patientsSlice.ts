@@ -32,7 +32,6 @@ export const fetchPatients = createAsyncThunk(
   'patients/fetchPatients',
   async () => {
     const response = await axios.get(`${process.env.REACT_APP_API_URL}/patients/appointments`);
-    console.log(response.data)
     return response.data;
   }
 );
@@ -48,12 +47,12 @@ const patientsSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchPatients.fulfilled, (state, action) => {
-        state.loading = false;
         state.patients = action.payload;
+        state.loading = false;
       })
       .addCase(fetchPatients.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.error.message || 'Не получилось загрузить список пациентов';
+        state.loading = false;
       });
   },
 });

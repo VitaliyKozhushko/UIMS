@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, DATE, ForeignKey, Enum, JSON
+from sqlalchemy import Column, Integer, String, TIMESTAMP, DATE, ForeignKey, Enum, JSON, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from app.constants import statuses, genders
@@ -10,7 +10,8 @@ class Resources(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String, nullable=False)
-    last_update = Column(TIMESTAMP(timezone=True), nullable=False)
+    last_update = Column(TIMESTAMP(timezone=True))
+    offline = Column(Boolean, nullable=False, default=False)
 
 class Appointments(Base):
     __tablename__ = 'appointments'

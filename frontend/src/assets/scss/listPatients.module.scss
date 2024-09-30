@@ -1,4 +1,16 @@
 .page {
   display: flex;
+  flex-direction: column;
   padding: 10px;
+  gap: 10px;
+
+  .actionBtnBlock {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .listBlock {
+    display: flex;
+    gap: 20px;
+  }
 }

@@ -1,16 +1,18 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from typing import List
 from app.models import Patients, Appointments
 from app.schemas import AppointmentsResponse, PatientsResponse, PatientAppointmentsResponse
 from app.database import get_db
+from app.services.FHIR import get_appointments
 
 router = APIRouter()
 
-@router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse])
+@router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse], summary='Список пациентов с записями')
 async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)):
+    await get_appointments()
     async with db.begin():
         patients_result = await db.execute(select(Patients).options(selectinload(Patients.appointments)))
         patients = patients_result.scalars().fetchall()

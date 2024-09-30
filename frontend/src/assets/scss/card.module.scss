@@ -1,5 +1,6 @@
 .patient {
   width: 300px;
+  transition: height 0.3s ease;
 
   .avatarBlock {
     display: flex;
@@ -25,4 +26,18 @@
       right: 2px;
     }
   }
+
+  &.open {
+    min-height: 299px;
+    height: auto;
+  }
+
+  &.close {
+    min-height: 299px;
+    height: 299px;
+  }
+}
+.accordionBlock {
+  height: 298px;
+  overflow: auto;
 }

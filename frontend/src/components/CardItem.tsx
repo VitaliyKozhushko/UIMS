@@ -1,22 +1,34 @@
+import React, {useState, useEffect} from 'react';
 import {Card, Text, Box, Button, Avatar, Badge, Space} from '@mantine/core';
 import card from '../assets/scss/card.module.scss';
 import {Patient} from '../store/patientsSlice';
 import CollapseAccordion from './CollapseAccordion';
-import { useDisclosure } from '@mantine/hooks';
 import {transformDate} from '../utils';
 
 interface CardProps {
-  mainCss: string,
-  data: Patient
+  mainCss: string;
+  data: Patient;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function CardItem(props: CardProps) {
-  const {mainCss, data} = props;
+  const {mainCss, data, isOpen, onToggle} = props;
 
-  const [opened, { toggle }] = useDisclosure(false);
+  const [displayCss, setDisplayCss] = useState<string>('close')
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => {
+        setDisplayCss('close')
+      }, 200)
+      return
+    }
+    setDisplayCss('open')
+  }, [isOpen])
 
   return (
-    <Card className={card[mainCss]} shadow="sm" padding="lg" radius="md" withBorder>
+    <Card className={`${card[mainCss]} ${card[displayCss]}`} shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section className={card.avatarBlock}>
         <Avatar className={card.avatar} variant="light" radius="md" size="xl" src=""/>
       </Card.Section>
@@ -45,12 +57,12 @@ function CardItem(props: CardProps) {
       </div>
 
       {data.appointments.length && (<><Button className={card.btnAppointment} color="blue" fullWidth mt="md" radius="md"
-                                              onClick={toggle}>
+                                              onClick={onToggle}>
         Записи к врачам
         <Badge className={card.countAppointment} size="xs" circle color='green'>
           {data.appointments.length}
         </Badge>
-      </Button><CollapseAccordion isOpen={opened} appointments={data.appointments}/></>)
+      </Button><CollapseAccordion isOpen={isOpen} appointments={data.appointments}/></>)
       }
       {!data.appointments.length && <><Space h='xs'/><Text size="sm" ta='center' c='grey'>Записей к врачу нет</Text></>}
     </Card>

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 interface CustomProps {
   css: string;
-  cssimg: string
+  cssimg: string;
 }
 
 type AuthFormProps = PaperProps & CustomProps;
@@ -19,12 +19,19 @@ function AuthForm(props: AuthFormProps) {
 
   const navigate = useNavigate();
 
+  function authUser() {
+    const currentTime = new Date().getTime();
+    localStorage.setItem('loginTime', currentTime.toString());
+    console.log('authUser')
+    navigate('/lk')
+  }
+
   return (
     <Paper className={css} radius="md" p="xl" withBorder {...props}>
       <img className={cssimg} src={authImg} alt='auth'></img>
       <Divider labelPosition="center" my="lg" />
 
-      <Button variant="filled" onClick={() => navigate('/lk')}>Вход</Button>
+      <Button variant="filled" onClick={authUser}>Вход</Button>
     </Paper>
   );
 }
