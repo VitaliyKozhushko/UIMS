@@ -13,21 +13,18 @@ function ListPatient() {
   const navigate = useNavigate();
 
   const {patients, loading, error} = useSelector((state: RootState) => state.patients);
-  const offline = useSelector((state: RootState) => state.config.offline);
+  const {offline, loadingConfig, resource} = useSelector((state: RootState) => state.config);
 
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [variantOfflineBtn, setVariantOfflineBtn] = useState<string>('light');
-  const [loadingOffline, setLoadingOffline] = useState<boolean>(false);
 
   useEffect(() => {
-    setLoadingOffline(true)
     dispatch(fetchPatients());
     dispatch(getOffline('Appointment'))
-    setLoadingOffline(false)
   }, [dispatch]);
 
   useEffect(() => {
-    setVariantOfflineBtn(offline ? 'filled' : 'light')
+    if (resource === 'Appointment') setVariantOfflineBtn(offline ? 'filled' : 'light')
   }, [offline]);
 
   if (loading) return <div>Loading...</div>;
@@ -43,19 +40,17 @@ function ListPatient() {
   }
 
   function handleOffline() {
-    setLoadingOffline(true)
     dispatch(updateOffline({
       offline: !offline,
       resource: 'Appointment'
     }));
-    setLoadingOffline(false)
   }
 
   return (
     <div className={patient.page}>
       <div className={patient.actionBtnBlock}>
         <Button variant="filled" onClick={handleLogout}>Выход</Button>
-        <Button loading={loadingOffline} variant={variantOfflineBtn} color='red'
+        <Button loading={loadingConfig} variant={variantOfflineBtn} color='red'
                 onClick={handleOffline}>Offline</Button>
       </div>
       <div className={patient.listBlock}>

@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import {fetchPatients} from "./patientsSlice";
 
 interface ConfigState {
   offline: boolean;
   resource: string;
+  loadingConfig: boolean;
 }
 
 interface UpdateOfflineParams {
@@ -13,7 +15,8 @@ interface UpdateOfflineParams {
 
 const initialState: ConfigState = {
   offline: false,
-  resource: ''
+  resource: '',
+  loadingConfig: false
 };
 
 export const updateOffline = createAsyncThunk(
@@ -35,13 +38,21 @@ const configSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(getOffline.pending, (state) => {
+        state.loadingConfig = true;
+      })
+      .addCase(updateOffline.pending, (state) => {
+        state.loadingConfig = true;
+      })
       .addCase(getOffline.fulfilled, (state, action) => {
         state.offline = action.payload.offline;
         state.resource = action.payload.type;
+        state.loadingConfig = false;
       })
       .addCase(updateOffline.fulfilled, (state, action) => {
         state.offline = action.payload.offline;
         state.resource = action.payload.type;
+        state.loadingConfig = false;
       });
   },
 });

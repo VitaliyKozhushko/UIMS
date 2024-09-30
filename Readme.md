@@ -32,6 +32,7 @@
 - простая авторизация по времени в localStorage
 - перед обновлением талиц, данных изз них удаляются
 - если один из запросов не подгрузится, то загрузятся данные из json-файла
+- иммитация обрыва сети через фронт
 
 uvicorn main:app --reload
 alembic revision --autogenerate -m "Create initial tables"
