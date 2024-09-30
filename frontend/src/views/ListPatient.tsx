@@ -22,7 +22,7 @@ function ListPatient() {
   useEffect(() => {
     setLoadingOffline(true)
     dispatch(fetchPatients());
-    dispatch(getOffline())
+    dispatch(getOffline('Appointment'))
     setLoadingOffline(false)
   }, [dispatch]);
 
@@ -44,7 +44,10 @@ function ListPatient() {
 
   function handleOffline() {
     setLoadingOffline(true)
-    dispatch(updateOffline(!offline));
+    dispatch(updateOffline({
+      offline: !offline,
+      resource: 'Appointment'
+    }));
     setLoadingOffline(false)
   }
 
@@ -52,7 +55,8 @@ function ListPatient() {
     <div className={patient.page}>
       <div className={patient.actionBtnBlock}>
         <Button variant="filled" onClick={handleLogout}>Выход</Button>
-        <Button loading={loadingOffline} variant={variantOfflineBtn} color='red' onClick={handleOffline}>Offline</Button>
+        <Button loading={loadingOffline} variant={variantOfflineBtn} color='red'
+                onClick={handleOffline}>Offline</Button>
       </div>
       <div className={patient.listBlock}>
         {patients.map((patient) => (

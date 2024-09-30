@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from app.database import create_db
 import logging
 from app.routers import appointments
+from app.routers import config
 from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
@@ -31,6 +32,7 @@ app.add_middleware(
 )
 
 app.include_router(appointments.router)
+app.include_router(config.router)
 
 @app.get("/")
 async def root():

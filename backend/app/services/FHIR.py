@@ -101,10 +101,10 @@ async def check_resources(db, resource, meta):
   exist_resource = await db.execute(
     select(Resources).where(Resources.type == resource)
   )
-  exist_resource = exist_resource.scalars().first()
+  exist_resource = exist_resource.scalars().first() or {}
   transform_date = datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
 
-  if transform_date and exist_resource.last_update == transform_date:
+  if transform_date and exist_resource.get('last_update') == transform_date:
     return
 
   if exist_resource:
