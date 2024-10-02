@@ -32,8 +32,6 @@ target_metadata = Base.metadata
 DATABASE_URL = f'postgresql://{env("USER_DB")}:{env("PASSWD_DB")}@{env("HOST_DB")}:{env("PORT_DB")}/{env("NAME_DB")}'
 
 config.set_main_option('sqlalchemy.url', DATABASE_URL)
-print(f'Using DATABASE_URL: {DATABASE_URL}')
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
