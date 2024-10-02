@@ -2,10 +2,10 @@
 Роуты для работы со списком пацинтов с записями
 """
 from fastapi import APIRouter, Depends
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
-from typing import List
 from app.models import Patients, Appointments
 from app.schemas import AppointmentsResponse, PatientsResponse, PatientAppointmentsResponse
 from app.database import get_db

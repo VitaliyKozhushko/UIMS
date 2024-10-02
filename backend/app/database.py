@@ -1,11 +1,9 @@
-import asyncio
-from sqlalchemy import text
+import os
+from pathlib import Path
+from environs import Env
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from app.models import Base
-from environs import Env
-import os
-from pathlib import Path
 
 env = Env()
 ENVIRONMENT = env('ENVIRONMENT', default='local')

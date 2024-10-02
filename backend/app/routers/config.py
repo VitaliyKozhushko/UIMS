@@ -2,8 +2,8 @@
 Роуты для изменения настроек проекта. В данном случае - вкл./выкл. симуляции обрыва сети
 """
 from fastapi import APIRouter, Depends, HTTPException
-from app.schemas import OfflineResponse, OfflineUpdate, OfflineUpdateRequest
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas import OfflineResponse, OfflineUpdate, OfflineUpdateRequest
 from app.database import get_db
 from app.crud import get_resource_data, update_offline_status
 
