@@ -1,3 +1,6 @@
+"""
+Модуль для получения данных о пациентах и записях и сохранения их в БД
+"""
 import httpx, json, os
 from fastapi import HTTPException
 from app.models import Appointments, Resources, Patients
@@ -141,8 +144,9 @@ async def get_patient(db, patient_data, resourse_offline):
   Получение данных о пациенте
   """
   patient = next(
-      (item['actor']['reference'] for item in patient_data if item.get('actor', {}).get('reference', '').startswith('Patient/')),
-      None
+    (item['actor']['reference'] for item in patient_data if
+     item.get('actor', {}).get('reference', '').startswith('Patient/')),
+    None
   )
   if not patient:
     print('Отсутствует id пациента')
@@ -181,23 +185,23 @@ async def get_patient(db, patient_data, resourse_offline):
                             detail="Сторонний ресурс недоступен, файл с данными о пациенте не найден.")
 
   try:
-      fullname_patient = get_fullname(data.get('name', []))
-      upd_birth_date = transform_birth_date(data.get('birthDate'))
+    fullname_patient = get_fullname(data.get('name', []))
+    upd_birth_date = transform_birth_date(data.get('birthDate'))
 
-      new_patient = Patients(
-          patient_id=patient_id,
-          identifier=data.get('identifier', [{}])[0].get('value'),
-          fullname=fullname_patient,
-          gender=data.get('gender', 'unknown'),
-          birth_date=upd_birth_date,
-          address=data.get('address', [{}])[0].get('text')
-      )
-      db.add(new_patient)
-      await db.commit()
-      return patient_id
+    new_patient = Patients(
+      patient_id=patient_id,
+      identifier=data.get('identifier', [{}])[0].get('value'),
+      fullname=fullname_patient,
+      gender=data.get('gender', 'unknown'),
+      birth_date=upd_birth_date,
+      address=data.get('address', [{}])[0].get('text')
+    )
+    db.add(new_patient)
+    await db.commit()
+    return patient_id
   except Exception as e:
-      await db.rollback()
-      print(f"Ошибка при сохранении пациента: {e}")
+    await db.rollback()
+    print(f"Ошибка при сохранении пациента: {e}")
 
 
 def get_fullname(name):
