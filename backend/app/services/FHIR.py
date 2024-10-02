@@ -1,12 +1,18 @@
 """
 Модуль для получения данных о пациентах и записях и сохранения их в БД
 """
-import httpx, json, os
+import httpx
+import json
+import os
 from pathlib import Path
 from datetime import datetime
 from fastapi import HTTPException
-from sqlalchemy import select, exists, delete
-from app.models import Appointments, Resources, Patients
+from sqlalchemy import (select,
+                        exists,
+                        delete)
+from app.models import (Appointments,
+                        Resources,
+                        Patients)
 from app.database import get_db
 
 

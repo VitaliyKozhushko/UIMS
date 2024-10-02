@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.models import Resources
+from .models import Resources
 
 
 async def get_resource_data(db: AsyncSession, resource_type: str):

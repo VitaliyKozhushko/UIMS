@@ -2,9 +2,9 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import create_db
-from app.routers import appointments
-from app.routers import config
+from .database import create_db
+from .routers import appointments
+from .routers import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

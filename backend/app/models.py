@@ -1,7 +1,16 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, DATE, ForeignKey, Enum, JSON, Boolean
+from sqlalchemy import (Column,
+                        Integer,
+                        String,
+                        TIMESTAMP,
+                        DATE,
+                        ForeignKey,
+                        Enum,
+                        JSON,
+                        Boolean)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.constants import statuses, genders
+from .constants import (statuses,
+                           genders)
 
 Base = declarative_base()
 

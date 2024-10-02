@@ -1,9 +1,12 @@
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict, Optional, Type, List
+from typing import (Dict,
+                    Optional,
+                    Type,
+                    List)
 from pydantic import field_validator
-from app.constants import statuses, genders
+from .constants import statuses, genders
 
 
 def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
