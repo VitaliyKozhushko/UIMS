@@ -12,7 +12,7 @@ GenderEnum = create_enum('GenderEnam', genders)
 class PatientsBase(BaseModel):
   fullname: str
   gender: GenderEnum
-  birth_date: datetime
+  birth_date: Optional[datetime] = None
 
 
 class PatientsResponse(PatientsBase):
@@ -48,5 +48,5 @@ class PatientCreate(BaseModel):
   identifier: Optional[List[Identifier]] = Field(default=None)
   fullname: str
   gender: str
-  birth_date: datetime
+  birth_date: Optional[datetime] = None
   address: Optional[List[Address]] = Field(default=None)

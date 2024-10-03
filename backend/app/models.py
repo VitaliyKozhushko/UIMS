@@ -82,7 +82,7 @@ class Patients(Base):
   identifier = mapped_column(String)
   fullname = mapped_column(String, nullable=False)
   gender = mapped_column(Enum(*genders.keys(), name='gender_name', nullable=False))
-  birth_date = mapped_column(DATE, nullable=False)
+  birth_date = mapped_column(DATE)
   address = mapped_column(JSON)
 
   appointments = relationship('Appointments', back_populates='patient')

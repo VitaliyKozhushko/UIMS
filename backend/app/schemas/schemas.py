@@ -18,7 +18,7 @@ StatusEnum = create_enum('StatusEnum', statuses)
 class AppointmentsBase(BaseModel):
   id: int
   status: StatusEnum
-  date_start: datetime
+  date_start: Optional[datetime] = None
   description: Optional[str] = None
 
 
