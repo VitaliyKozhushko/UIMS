@@ -28,15 +28,16 @@ async def get_appointments():
     try:
       result = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
       resource = result.scalar_one_or_none()
+      print('resource:', resource)
       resourse_offline = resource and resource.offline
 
       if resourse_offline:
         data = get_json_data('appointment', resourse_offline)
       else:
-        data = get_online_data(resourse_offline)
-
+        data = await get_online_data(resourse_offline, resourse_offline)
+      print(777, data)
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
-
+      print('resource_id:', resource_id)
       if not resource_id:
         return
 
@@ -160,13 +161,14 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
   if resourse_offline:
     data = get_json_data('patient', resourse_offline, patient_id)
   else:
-    data = get_online_data(db, resourse_offline)
+    data = await get_online_data(db, resourse_offline)
 
   try:
     fullname_patient = get_fullname(data.get('name', []))
     upd_birth_date = transform_birth_date(data.get('birthDate'))
 
     print('data_pat:', data)
+    print('upd_birth_date:', upd_birth_date)
     patient_data = PatientCreate(
       patient_id=patient_id,
       identifier=[
@@ -217,8 +219,9 @@ def get_fullname(name: list[dict[str, Union[str, list[str]]]]) -> str:
   return fullname_patient if not fullname_patient.isspace() else 'н/д'
 
 
-def transform_birth_date(birth_date_str: str) -> Optional[date]:
+def transform_birth_date(birth_date_str: Optional[str]) -> Optional[date]:
   """Преобразование даты рождения из строки в объект date"""
+  print('birth_date_str:', birth_date_str)
   if birth_date_str:
     try:
       return datetime.strptime(birth_date_str, '%Y-%m-%d').date()
@@ -256,6 +259,8 @@ async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: 
     async with httpx.AsyncClient() as client:
       response = await client.get(url)
       response.raise_for_status()
+      print('url:', url)
+      print('response.json():', response.json())
       return response.json()
   except httpx.TimeoutException:
     logger.info("Таймаут при загрузке данных.")

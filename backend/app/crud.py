@@ -1,4 +1,5 @@
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import Resources
@@ -11,10 +12,17 @@ async def get_resource_data(db: AsyncSession, resource_type: str) -> Resources:
   try:
     query = select(Resources).where(Resources.type == resource_type)
     result = await db.execute(query)
+    resource = result.scalar_one_or_none()
     await db.commit()
-    return result.scalar_one_or_none()
+    if not resource:
+      new_resource = Resources(
+        type='Appointment'
+      )
+      db.add(new_resource)
+      await db.commit()
+    return resource
   except Exception as e:
-    print(f'ОШибка {e}')
+    print(f'Ошибка {e}')
     raise
 
 

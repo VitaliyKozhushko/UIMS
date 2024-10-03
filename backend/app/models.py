@@ -28,7 +28,7 @@ class Resources(Base):
   __tablename__ = 'resources'
 
   id = mapped_column(Integer, primary_key=True, index=True)
-  type = mapped_column(String, nullable=False)
+  type = mapped_column(String, nullable=False, unique=True)
   last_update = mapped_column(TIMESTAMP(timezone=True))
   offline = mapped_column(Boolean, nullable=False, default=False)
 

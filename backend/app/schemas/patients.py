@@ -28,7 +28,7 @@ class PatientAppointmentsResponse(BaseModel):
   id: int
   fullname: str
   gender: str
-  birth_date: datetime
+  birth_date: Optional[datetime] = None
   appointments: List[AppointmentsResponse]
 
 
