@@ -5,11 +5,13 @@ import httpx
 import json
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
+from typing import Union, List, Optional
 from fastapi import HTTPException
 from sqlalchemy import (select,
                         exists,
                         delete)
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (Appointments,
                         Resources,
                         Patients)
@@ -77,7 +79,8 @@ async def get_appointments():
       await db.close()
 
 
-async def create_appointment(resource, resource_id, patient_id):
+async def create_appointment(resource: dict[str, Union[str, int, List[dict], dict]], resource_id: int,
+                             patient_id: str) -> Appointments:
   """
   Создание новой записи на приём
   """
@@ -98,7 +101,9 @@ async def create_appointment(resource, resource_id, patient_id):
   )
 
 
-def extract_service_details(resource):
+def extract_service_details(resource: dict[str, Union[str, int, List[dict], dict]]) -> list[
+  dict[str, list[dict[str, Union[str, list[dict[str, str]]]]]]
+]:
   """Формирование данных о враче, специализации"""
   service_details = []
   if 'serviceCategory' in resource:
@@ -110,23 +115,23 @@ def extract_service_details(resource):
   return service_details
 
 
-def transform_start_end(date_str):
+def transform_start_end(date_str: str) -> Union[datetime, str]:
   """Преобразование даты в TIMESTAMP"""
   if isinstance(date_str, str):
     return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
   return date_str
 
 
-async def check_resources(db, resource, meta):
+async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str, str], dict]) -> Optional[int]:
   """
   Проверка на существование типа ресурса в БД и добавление запрашиваемого ресурса в БД при его отсутствии
   """
-  date = meta.get('lastUpdated')
+  date_upd = meta.get('lastUpdated')
   exist_resource = await db.execute(
     select(Resources).where(Resources.type == resource)
   )
   exist_resource = exist_resource.scalars().first()
-  transform_date = datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
+  transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
 
   if transform_date and exist_resource and exist_resource.last_update == transform_date:
     return
@@ -145,7 +150,8 @@ async def check_resources(db, resource, meta):
     return new_resource.id
 
 
-async def get_patient(db, patient_data, resourse_offline):
+async def get_patient(db: AsyncSession, patient_data: Optional[list[dict[str, Union[dict[str, str], str]]]],
+                      resourse_offline: bool) -> Optional[str]:
   """
   Получение данных о пациенте
   """
@@ -210,7 +216,7 @@ async def get_patient(db, patient_data, resourse_offline):
     print(f"Ошибка при сохранении пациента: {e}")
 
 
-def get_fullname(name):
+def get_fullname(name: list[dict[str, Union[str, list[str]]]]) -> str:
   """Получаем полное имя пациента."""
   if len(name) == 0:
     return 'н/д'
@@ -222,7 +228,7 @@ def get_fullname(name):
   return fullname_patient if not fullname_patient.isspace() else 'н/д'
 
 
-def transform_birth_date(birth_date_str):
+def transform_birth_date(birth_date_str: str) -> Optional[date]:
   """Преобразование даты рождения из строки в объект date"""
   if birth_date_str:
     try:
