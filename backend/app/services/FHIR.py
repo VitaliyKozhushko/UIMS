@@ -245,11 +245,11 @@ def get_fullname(name: list[dict[str, Union[str, list[str]]]]) -> str:
   """Получаем полное имя пациента."""
   if len(name) == 0:
     return 'н/д'
-  fullname_patient = name[0].get('text')
+  fullname_patient = name[0].get('text', '').strip()
   if not fullname_patient:
     family_name = name[0].get('family', '')
     given_name = ' '.join(name[0].get('given', []))
-    fullname_patient = f'{family_name} {given_name}'
+    fullname_patient = f'{family_name.strip()} {given_name.strip()}'
   return fullname_patient if not fullname_patient.isspace() else 'н/д'
 
 
