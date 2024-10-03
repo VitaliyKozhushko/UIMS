@@ -12,6 +12,7 @@ from sqlalchemy import (select,
                         exists,
                         delete)
 from sqlalchemy.ext.asyncio import AsyncSession
+from ..main import logger
 from ..models import (Appointments,
                       Resources,
                       Patients)
@@ -159,7 +160,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
   if resourse_offline:
     data = get_json_data('patient', resourse_offline, patient_id)
   else:
-    data = get_online_data(resourse_offline)
+    data = get_online_data(db, resourse_offline)
 
   try:
     fullname_patient = get_fullname(data.get('name', []))
@@ -246,7 +247,7 @@ def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = Non
     print(f'Ошибка {e}')
 
 
-async def get_online_data(resourse_offline: bool, patient_id: Optional[str] = None) -> dict[str, Any]:
+async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: Optional[str] = None) -> dict[str, Any]:
   """
   Получение данных из онлайн ресурса
   """
@@ -256,6 +257,15 @@ async def get_online_data(resourse_offline: bool, patient_id: Optional[str] = No
       response = await client.get(url)
       response.raise_for_status()
       return response.json()
-  except (httpx.RequestError, httpx.HTTPStatusError):
-    type_data = 'patient' if patient_id else 'appointment'
-    return get_json_data(type_data, resourse_offline, patient_id)
+  except httpx.TimeoutException:
+    logger.info("Таймаут при загрузке данных.")
+  except httpx.RequestError as e:
+    logger.info(f"Ошибка сети: {e}")
+  except httpx.HTTPStatusError as e:
+    logger.info(f"HTTP ошибка: {e.response.status_code} - {e.response.text}")
+
+  if not patient_id:
+    await db.execute(delete(Patients))
+    await db.commit()
+  type_data = 'patient' if patient_id else 'appointment'
+  return get_json_data(type_data, resourse_offline, patient_id)
