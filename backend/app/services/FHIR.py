@@ -33,7 +33,7 @@ async def get_appointments():
       if resourse_offline:
         backup_directory = Path(__file__).resolve().parent.parent / 'backup'
         try:
-          with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r') as file:
+          with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r', encoding='utf-8') as file:
             data = json.load(file)
         except FileNotFoundError:
           raise HTTPException(status_code=500, detail="Файл с записями на прием не найден.")
@@ -46,7 +46,7 @@ async def get_appointments():
         except (httpx.RequestError, httpx.HTTPStatusError):
           try:
             backup_directory = Path(__file__).resolve().parent.parent / 'backup'
-            with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r') as file:
+            with open(os.path.join(backup_directory, 'appointments-bundle.json'), 'r', encoding='utf-8') as file:
               data = json.load(file)
           except FileNotFoundError:
             raise HTTPException(status_code=500,
@@ -179,7 +179,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
   if resourse_offline:
     try:
       backup_directory = Path(__file__).resolve().parent.parent / 'backup'
-      with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r') as file:
+      with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r', encoding='utf-8') as file:
         data = json.load(file)
     except FileNotFoundError:
       raise HTTPException(status_code=500,
@@ -193,7 +193,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
     except (httpx.RequestError, httpx.HTTPStatusError):
       try:
         backup_directory = Path(__file__).resolve().parent.parent / 'backup'
-        with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r') as file:
+        with open(os.path.join(backup_directory, f'patient-{patient_id}.json'), 'r', encoding='utf-8') as file:
           data = json.load(file)
       except FileNotFoundError:
         raise HTTPException(status_code=500,
