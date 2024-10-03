@@ -10,7 +10,8 @@ from typing import Union, List, Optional, Any
 from fastapi import HTTPException
 from sqlalchemy import (select,
                         exists,
-                        delete)
+                        delete,
+                        func)
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..logging_config import logger
 from ..models import (Appointments,
@@ -28,16 +29,25 @@ async def get_appointments():
     try:
       result = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
       resource = result.scalar_one_or_none()
-      print('resource:', resource)
+
+      if not resource:
+        result = await db.execute(select(func.count()).select_from(Resources))
+        count = result.scalar()
+        if count == 0:
+          new_resource = Resources(
+            type='Appointment'
+          )
+          db.add(new_resource)
+          await db.commit()
       resourse_offline = resource and resource.offline
 
       if resourse_offline:
         data = get_json_data('appointment', resourse_offline)
       else:
         data = await get_online_data(resourse_offline, resourse_offline)
-      print(777, data)
+
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
-      print('resource_id:', resource_id)
+
       if not resource_id:
         return
 
