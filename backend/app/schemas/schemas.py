@@ -1,12 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import (BaseModel,
+                      field_validator)
 from typing import (Dict,
                     Optional,
-                    Type,
-                    List)
-from pydantic import field_validator
-from .constants import statuses, genders
+                    Type)
+from ..constants import statuses
 
 
 def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
@@ -14,7 +13,6 @@ def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
 
 
 StatusEnum = create_enum('StatusEnum', statuses)
-GenderEnum = create_enum('GenderEnam', genders)
 
 
 class AppointmentsBase(BaseModel):
@@ -31,29 +29,6 @@ class AppointmentsResponse(AppointmentsBase):
   @field_validator('status', mode='before')
   def convert_gender(cls, value):
     return statuses.get(value, 'Статус не получен')
-
-
-class PatientsBase(BaseModel):
-  fullname: str
-  gender: GenderEnum
-  birth_date: datetime
-
-
-class PatientsResponse(PatientsBase):
-  class Config:
-    from_attributes = True
-
-  @field_validator('gender', mode='before')
-  def convert_gender(cls, value):
-    return genders.get(value, 'Не указан')
-
-
-class PatientAppointmentsResponse(BaseModel):
-  id: int
-  fullname: str
-  gender: str
-  birth_date: datetime
-  appointments: List[AppointmentsResponse]
 
 
 class ResourseBase(BaseModel):

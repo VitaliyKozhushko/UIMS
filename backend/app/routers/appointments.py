@@ -9,9 +9,9 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from ..models import (Patients,
                         Appointments)
-from ..schemas import (AppointmentsResponse,
-                         PatientsResponse,
-                         PatientAppointmentsResponse)
+from ..schemas.schemas import (AppointmentsResponse)
+from ..schemas.patients import (PatientsResponse,
+                                PatientAppointmentsResponse)
 from ..database import get_db
 from ..services.FHIR import get_appointments
 

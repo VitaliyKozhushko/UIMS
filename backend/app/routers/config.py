@@ -5,7 +5,7 @@ from fastapi import (APIRouter,
                      Depends,
                      HTTPException)
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..schemas import (OfflineResponse,
+from ..schemas.schemas import (OfflineResponse,
                          OfflineUpdate,
                          OfflineUpdateRequest)
 from ..database import get_db

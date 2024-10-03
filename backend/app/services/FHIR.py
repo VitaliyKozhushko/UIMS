@@ -12,10 +12,12 @@ from sqlalchemy import (select,
                         exists,
                         delete)
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import (Appointments,
+from ..models import (Appointments,
                         Resources,
                         Patients)
-from app.database import get_db
+from ..database import get_db
+from ..schemas.patients import PatientCreate, Identifier, Address
+
 
 
 async def get_appointments():
@@ -24,8 +26,8 @@ async def get_appointments():
   """
   async for db in get_db():
     try:
-      resource = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
-      resource = resource.scalar_one_or_none()
+      result = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
+      resource = result.scalar_one_or_none()
       resourse_offline = resource and resource.offline
 
       if resourse_offline:
@@ -133,10 +135,12 @@ async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str,
   transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
 
   if transform_date and exist_resource and exist_resource.last_update == transform_date:
+    await db.commit()
     return
 
   if exist_resource:
     exist_resource.last_update = transform_date
+    await db.commit()
     return exist_resource.id
   else:
     new_resource = Resources(
@@ -199,13 +203,35 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
     fullname_patient = get_fullname(data.get('name', []))
     upd_birth_date = transform_birth_date(data.get('birthDate'))
 
-    new_patient = Patients(
+    patient_data = PatientCreate(
       patient_id=patient_id,
-      identifier=data.get('identifier', [{}])[0].get('value'),
+      identifier=[
+        Identifier(
+          value=ident.get('value'),
+          system=ident.get('system')
+        )
+        for ident in data.get('identifier', [])
+      ] if data.get('identifier') else None,
       fullname=fullname_patient,
       gender=data.get('gender', 'unknown'),
       birth_date=upd_birth_date,
-      address=data.get('address', [{}])[0].get('text')
+      address=[
+        Address(
+          use=addr.get('use'),
+          line=addr.get('line', []),
+          text=addr.get('text')
+        )
+        for addr in data.get('address', [])
+      ] if data.get('address') else None
+    )
+
+    new_patient = Patients(
+      patient_id=patient_data.patient_id,
+      identifier=patient_data.identifier[0].value if patient_data.identifier else None,
+      fullname=patient_data.fullname,
+      gender=patient_data.gender,
+      birth_date=patient_data.birth_date,
+      address=[addr.model_dump() for addr in patient_data.address]
     )
     db.add(new_patient)
     await db.commit()

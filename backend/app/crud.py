@@ -10,6 +10,7 @@ async def get_resource_data(db: AsyncSession, resource_type: str) -> Resources:
   """
   query = select(Resources).where(Resources.type == resource_type)
   result = await db.execute(query)
+  await db.commit()
   return result.scalar_one_or_none()
 
 
