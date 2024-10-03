@@ -203,6 +203,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
     fullname_patient = get_fullname(data.get('name', []))
     upd_birth_date = transform_birth_date(data.get('birthDate'))
 
+    print('data_pat:', data)
     patient_data = PatientCreate(
       patient_id=patient_id,
       identifier=[
@@ -231,7 +232,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
       fullname=patient_data.fullname,
       gender=patient_data.gender,
       birth_date=patient_data.birth_date,
-      address=[addr.model_dump() for addr in patient_data.address]
+      address=[addr.model_dump() for addr in patient_data.address] if patient_data.address else None
     )
     db.add(new_patient)
     await db.commit()

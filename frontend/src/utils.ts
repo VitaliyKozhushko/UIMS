@@ -1,4 +1,6 @@
-export function transformDate(dateStr: string, timeDisplay: boolean = false): string {
+export function transformDate(dateStr: string | undefined, timeDisplay: boolean = false): string {
+    if (!dateStr) return 'дата не указана'
+
     const date = new Date(dateStr);
 
     const day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();

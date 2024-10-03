@@ -25,7 +25,7 @@ function ListPatient() {
 
   useEffect(() => {
     if (resource === 'Appointment') setVariantOfflineBtn(offline ? 'filled' : 'light')
-  }, [offline]);
+  }, [resource, offline]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
