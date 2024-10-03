@@ -4,15 +4,15 @@ import axios from 'axios';
 export interface Appointment {
   id: number;
   status: string;
-  date_start: string;
-  description: string;
+  date_start?: string;
+  description?: string;
 }
 
 export interface Patient {
   id: number;
   fullname: string;
   gender: string;
-  birth_date: string;
+  birth_date?: string;
   appointments: Appointment[];
 }
 

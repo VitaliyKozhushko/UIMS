@@ -1,19 +1,41 @@
+from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.models import Resources
+from .models import Resources
 
-async def get_resource_data(db: AsyncSession, resource_type: str):
-    query = select(Resources).where(Resources.type == resource_type)
-    result = await db.execute(query)
-    return result.scalar_one_or_none()
 
-async def update_offline_status(db: AsyncSession, resource_type: str, offline_status: bool):
+async def get_resource_data(db: AsyncSession, resource_type: str) -> Resources:
+  """
+  Получение списка ресурсов
+  """
+  try:
     query = select(Resources).where(Resources.type == resource_type)
     result = await db.execute(query)
     resource = result.scalar_one_or_none()
+    await db.commit()
+    if not resource:
+      new_resource = Resources(
+        type='Appointment'
+      )
+      db.add(new_resource)
+      await db.commit()
+    return resource
+  except Exception as e:
+    print(f'Ошибка {e}')
+    raise
 
-    if resource:
-        resource.offline = offline_status
-        await db.commit()
-        return resource
-    return None
+
+async def update_offline_status(db: AsyncSession, resource_type: str, offline_status: bool) -> Optional[Resources]:
+  """
+  Вкл./выкл. симуляции обрыва сети
+  """
+  query = select(Resources).where(Resources.type == resource_type)
+  result = await db.execute(query)
+  resource = result.scalar_one_or_none()
+
+  if resource:
+    resource.offline = offline_status
+    await db.commit()
+    return resource
+  return None

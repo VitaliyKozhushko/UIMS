@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 
 
 # this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+# access to the values wit  hin the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.
@@ -32,8 +32,6 @@ target_metadata = Base.metadata
 DATABASE_URL = f'postgresql://{env("USER_DB")}:{env("PASSWD_DB")}@{env("HOST_DB")}:{env("PORT_DB")}/{env("NAME_DB")}'
 
 config.set_main_option('sqlalchemy.url', DATABASE_URL)
-print(f'Using DATABASE_URL: {DATABASE_URL}')
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
