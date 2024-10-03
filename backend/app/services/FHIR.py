@@ -12,7 +12,7 @@ from sqlalchemy import (select,
                         exists,
                         delete)
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..main import logger
+from ..logging_config import logger
 from ..models import (Appointments,
                       Resources,
                       Patients)

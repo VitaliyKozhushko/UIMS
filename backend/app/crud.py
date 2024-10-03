@@ -8,10 +8,14 @@ async def get_resource_data(db: AsyncSession, resource_type: str) -> Resources:
   """
   Получение списка ресурсов
   """
-  query = select(Resources).where(Resources.type == resource_type)
-  result = await db.execute(query)
-  await db.commit()
-  return result.scalar_one_or_none()
+  try:
+    query = select(Resources).where(Resources.type == resource_type)
+    result = await db.execute(query)
+    await db.commit()
+    return result.scalar_one_or_none()
+  except Exception as e:
+    print(f'ОШибка {e}')
+    raise
 
 
 async def update_offline_status(db: AsyncSession, resource_type: str, offline_status: bool) -> Optional[Resources]:

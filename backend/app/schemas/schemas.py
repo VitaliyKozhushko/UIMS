@@ -1,10 +1,12 @@
 from datetime import datetime
 from enum import Enum
 from pydantic import (BaseModel,
-                      field_validator)
+                      field_validator,
+                      ConfigDict)
 from typing import (Dict,
                     Optional,
-                    Type)
+                    Type,
+                    ClassVar)
 from ..constants import statuses
 
 
@@ -23,8 +25,7 @@ class AppointmentsBase(BaseModel):
 
 
 class AppointmentsResponse(AppointmentsBase):
-  class Config:
-    from_attributes = True
+  config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
   @field_validator('status', mode='before')
   def convert_gender(cls, value):
@@ -43,13 +44,11 @@ class OfflineUpdate(ResourseBase):
   offline: bool
   type: Optional[str] = None
 
-  class Config:
-    from_attributes = True
+  config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
 
 class OfflineResponse(ResourseBase):
   offline: bool
   type: Optional[str] = None
 
-  class Config:
-    from_attributes = True
+  config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
