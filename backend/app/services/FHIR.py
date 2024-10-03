@@ -58,14 +58,13 @@ async def get_appointments():
         return
 
       # Удаляем старые данные
-      await db.execute(delete(Appointments))
       await db.execute(delete(Patients))
       await db.commit()
 
       for item in data.get('entry', []):
         resource = item.get('resource')
         if resource:
-          patient_id = await get_patient(db, resource.get('participant'), resourse_offline)
+          patient_id = await get_patient(db, resource.get('participant', {}), resourse_offline)
           if patient_id:
             new_appointment = await create_appointment(resource, resource_id, patient_id)
             db.add(new_appointment)
@@ -117,7 +116,7 @@ def extract_service_details(resource: dict[str, Union[str, int, List[dict], dict
 
 def transform_start_end(date_str: str) -> Union[datetime, str]:
   """Преобразование даты в TIMESTAMP"""
-  if isinstance(date_str, str):
+  if date_str:
     return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
   return date_str
 
@@ -142,7 +141,7 @@ async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str,
   else:
     new_resource = Resources(
       type=resource,
-      last_update=datetime.fromisoformat(date.replace("Z", "+00:00")) if date else None
+      last_update=datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date else None
     )
     db.add(new_resource)
     await db.commit()
@@ -150,7 +149,7 @@ async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str,
     return new_resource.id
 
 
-async def get_patient(db: AsyncSession, patient_data: Optional[list[dict[str, Union[dict[str, str], str]]]],
+async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union[dict[str, str], str]]], dict],
                       resourse_offline: bool) -> Optional[str]:
   """
   Получение данных о пациенте
@@ -166,11 +165,11 @@ async def get_patient(db: AsyncSession, patient_data: Optional[list[dict[str, Un
 
   patient_id = patient.removeprefix('Patient/')
 
-  exist_patient = await db.execute(
+  exist_patient = await db.scalar(
     select(exists().where(Patients.patient_id == patient_id))
   )
 
-  if exist_patient.scalar():
+  if exist_patient:
     return patient_id
 
   if resourse_offline:

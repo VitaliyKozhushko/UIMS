@@ -58,7 +58,7 @@ class Appointments(Base):
   participants = mapped_column(JSON)
   priority = mapped_column(Integer)
   resource_id = mapped_column(Integer, ForeignKey('resources.id'))
-  patient_id = mapped_column(String, ForeignKey('patients.patient_id'))
+  patient_id = mapped_column(String, ForeignKey('patients.patient_id', ondelete='CASCADE'))
 
   resource = relationship('Resources')
   patient = relationship('Patients', back_populates='appointments')
