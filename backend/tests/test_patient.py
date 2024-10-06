@@ -2,7 +2,6 @@ from typing import AsyncIterator
 import httpx
 import pytest
 import pytest_asyncio
-import asyncio
 from httpx import (AsyncClient,
                    ASGITransport)
 from app.main import app
@@ -10,7 +9,7 @@ from app.logging_config import logger
 
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(loop_scope='module')
 async def client() -> AsyncIterator[httpx.AsyncClient]:
   async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
     yield client
