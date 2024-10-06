@@ -1,19 +1,29 @@
+from typing import AsyncIterator
+import httpx
 import pytest
+import pytest_asyncio
+import asyncio
 from httpx import (AsyncClient,
                    ASGITransport)
 from app.main import app
 from app.logging_config import logger
 
 
-@pytest.mark.asyncio
-async def test_get_resource_status():
+
+@pytest_asyncio.fixture(scope="module")
+async def client() -> AsyncIterator[httpx.AsyncClient]:
+  async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    yield client
+
+
+@pytest.mark.asyncio(loop_scope='module')
+async def test_get_resource_status(client: httpx.AsyncClient):
   """
   Проверяем получение статуса offline
   """
   resource_type = "Appointment"
 
-  async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-    response = await ac.get(f"/resources/{resource_type}")
+  response = await client.get(f"/resources/{resource_type}")
 
   logger.info(f"Response status: {response.status_code}, data: {response.json()}")
   assert response.status_code == 200
@@ -25,13 +35,13 @@ async def test_get_resource_status():
   assert data['type'] == 'Appointment'
 
 
-@pytest.mark.asyncio
-async def test_get_patients_appointments():
+@pytest.mark.asyncio(loop_scope='module')
+async def test_get_patients_appointments(client: httpx.AsyncClient):
   """
   Проверяем получение списка пациентов
   """
-  async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-    response = await ac.get("/patients/appointments")
+  response = await client.get("/patients/appointments")
+
   logger.info(f"Response status: {response.status_code}, data: {response.json()}")
   assert response.status_code == 200
   data = response.json()
