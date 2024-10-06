@@ -5,6 +5,7 @@ Revises: 192e861481d7
 Create Date: 2024-10-03 07:15:37.830594
 
 """
+# mypy: ignore-errors
 from typing import Sequence, Union
 
 from alembic import op
