@@ -67,7 +67,7 @@
 
 1. Клонируйте репозиторий
 ```
-git clone https://github.com/VitaliyKozhushko/chat_app
+git clone https://github.com/VitaliyKozhushko/UIMS.git
 ```
 2. Настройте .env файл:
    - для бэка: в папке backend/
