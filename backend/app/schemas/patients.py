@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import (List,
                     Optional,
                     ClassVar)
@@ -49,5 +49,5 @@ class PatientCreate(BaseModel):
   identifier: Optional[List[Identifier]] = Field(default=None)
   fullname: str
   gender: str
-  birth_date: Optional[datetime] = None
+  birth_date: Optional[date] = None
   address: Optional[List[Address]] = Field(default=None)

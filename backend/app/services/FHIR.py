@@ -32,19 +32,19 @@ async def get_appointments() -> None:
 
       if not resource:
         result = await db.execute(select(func.count()).select_from(Resources))
-        count = result.scalar()
+        count = result.scalar_one()
         if count == 0:
           new_resource = Resources(
             type='Appointment'
           )
           db.add(new_resource)
           await db.commit()
-      resourse_offline = resource and resource.offline
+      resourse_offline = bool(resource and resource.offline)
 
       if resourse_offline:
         data = get_json_data('appointment', resourse_offline)
       else:
-        data = await get_online_data(resourse_offline, resourse_offline)
+        data = await get_online_data(db, resourse_offline)
 
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
 
@@ -56,11 +56,11 @@ async def get_appointments() -> None:
       await db.commit()
 
       for item in data.get('entry', []):
-        resource = item.get('resource')
-        if resource:
-          patient_id = await get_patient(db, resource.get('participant', {}), resourse_offline)
+        json_resource = item.get('resource')
+        if json_resource:
+          patient_id = await get_patient(db, json_resource['participant'] if json_resource else {}, resourse_offline)
           if patient_id:
-            new_appointment = await create_appointment(resource, resource_id, patient_id)
+            new_appointment = await create_appointment(json_resource, resource_id, patient_id)
             db.add(new_appointment)
 
       await db.commit()
@@ -72,14 +72,15 @@ async def get_appointments() -> None:
       await db.close()
 
 
-async def create_appointment(resource: dict[str, Union[str, int, List[dict], dict]], resource_id: int,
+async def create_appointment(resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]],
+                             resource_id: int,
                              patient_id: str) -> Appointments:
   """
   Создание новой записи на приём
   """
   service_details = extract_service_details(resource)
-  date_start = transform_start_end(resource.get('start'))
-  date_stop = transform_start_end(resource.get('end'))
+  date_start = transform_start_end(str(resource.get('start', '')))
+  date_stop = transform_start_end(str(resource.get('end', '')))
 
   return Appointments(
     status=resource.get('status', 'entered-in-error'),
@@ -94,9 +95,8 @@ async def create_appointment(resource: dict[str, Union[str, int, List[dict], dic
   )
 
 
-def extract_service_details(resource: dict[str, Union[str, int, List[dict], dict]]) -> list[
-  dict[str, list[dict[str, Union[str, list[dict[str, str]]]]]]
-]:
+def extract_service_details(resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]) -> list[
+  dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]]:
   """Формирование данных о враче, специализации"""
   service_details = []
   if 'serviceCategory' in resource:
@@ -115,49 +115,57 @@ def transform_start_end(date_str: str) -> Union[datetime, str]:
   return date_str
 
 
-async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str, str], dict]) -> Optional[int]:
+async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str, str], dict[str, Any]]) -> Optional[
+  int]:
   """
   Проверка на существование типа ресурса в БД и добавление запрашиваемого ресурса в БД при его отсутствии
   """
   date_upd = meta.get('lastUpdated')
-  exist_resource = await db.execute(
+  result = await db.execute(
     select(Resources).where(Resources.type == resource)
   )
-  exist_resource = exist_resource.scalars().first()
+  exist_resource: Optional[Resources] = result.scalars().first()
   transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
 
   if transform_date and exist_resource and exist_resource.last_update == transform_date:
     await db.commit()
-    return
+    return None
 
   if exist_resource:
     exist_resource.last_update = transform_date
     await db.commit()
-    return exist_resource.id
+    return int(exist_resource.id)
   else:
     new_resource = Resources(
       type=resource,
-      last_update=datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date else None
+      last_update=datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
     )
     db.add(new_resource)
     await db.commit()
 
-    return new_resource.id
+    return int(new_resource.id)
 
 
-async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union[dict[str, str], str]]], dict],
-                      resourse_offline: bool) -> Optional[str]:
+async def get_patient(
+    db: AsyncSession,
+    patient_data: Union[List[dict[str, Union[dict[str, str], str]]], dict[str, Any]],
+    resourse_offline: bool
+) -> Optional[str]:
   """
   Получение данных о пациенте
   """
   patient = next(
-    (item['actor']['reference'] for item in patient_data if
-     item.get('actor', {}).get('reference', '').startswith('Patient/')),
+    (
+      item['actor']['reference'] for item in patient_data
+      if isinstance(item, dict) and isinstance(item.get('actor'), dict) and
+         isinstance(item['actor'].get('reference'), str) and
+         item['actor']['reference'].startswith('Patient/')
+    ),
     None
   )
   if not patient:
     print('Отсутствует id пациента')
-    return
+    return None
 
   patient_id = patient.removeprefix('Patient/')
 
@@ -177,9 +185,7 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
     fullname_patient = get_fullname(data.get('name', []))
     upd_birth_date = transform_birth_date(data.get('birthDate'))
 
-    print('data_pat:', data)
-    print('upd_birth_date:', upd_birth_date)
-    patient_data = PatientCreate(
+    patient_create = PatientCreate(
       patient_id=patient_id,
       identifier=[
         Identifier(
@@ -202,12 +208,12 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
     )
 
     new_patient = Patients(
-      patient_id=patient_data.patient_id,
-      identifier=patient_data.identifier[0].value if patient_data.identifier else None,
-      fullname=patient_data.fullname,
-      gender=patient_data.gender,
-      birth_date=patient_data.birth_date,
-      address=[addr.model_dump() for addr in patient_data.address] if patient_data.address else None
+      patient_id=patient_create.patient_id,
+      identifier=patient_create.identifier[0].value if patient_create.identifier else None,
+      fullname=patient_create.fullname,
+      gender=patient_create.gender,
+      birth_date=patient_create.birth_date,
+      address=[addr.model_dump() for addr in patient_create.address] if patient_create.address else None
     )
     db.add(new_patient)
     await db.commit()
@@ -215,17 +221,23 @@ async def get_patient(db: AsyncSession, patient_data: Union[list[dict[str, Union
   except Exception as e:
     await db.rollback()
     print(f"Ошибка при сохранении пациента: {e}")
+    return None
 
 
 def get_fullname(name: list[dict[str, Union[str, list[str]]]]) -> str:
   """Получаем полное имя пациента."""
   if len(name) == 0:
     return 'н/д'
-  fullname_patient = name[0].get('text', '').strip()
+  text_value = name[0].get('text', '')
+  fullname_patient = text_value.strip() if isinstance(text_value, str) else ''
   if not fullname_patient:
-    family_name = name[0].get('family', '')
-    given_name = ' '.join(name[0].get('given', []))
-    fullname_patient = f'{family_name.strip()} {given_name.strip()}'
+    family_text = name[0].get('family', '')
+    given_name = name[0].get('given', [])
+    if isinstance(given_name, list):
+      given_name = ' '.join(given_name)
+    family_name = family_text.strip() if isinstance(family_text, str) else ''
+    given_name = given_name.strip() if isinstance(given_name, str) else ''
+    fullname_patient = f'{family_name.strip()} {given_name}'
   return fullname_patient if not fullname_patient.isspace() else 'н/д'
 
 
@@ -258,6 +270,7 @@ def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = Non
 
   except Exception as e:
     print(f'Ошибка {e}')
+    return None
 
 
 async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: Optional[str] = None) -> dict[str, Any]:
