@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import (List,
+                    Optional,
+                    ClassVar)
 from pydantic import (BaseModel,
                       Field,
-                      field_validator)
+                      field_validator,
+                      ConfigDict)
 from ..constants import genders
 from .schemas import create_enum, AppointmentsResponse
 
@@ -16,8 +19,7 @@ class PatientsBase(BaseModel):
 
 
 class PatientsResponse(PatientsBase):
-  class Config:
-    from_attributes = True
+  config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
   @field_validator('gender', mode='before')
   def convert_gender(cls, value):
