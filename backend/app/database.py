@@ -1,8 +1,11 @@
 import os
 from pathlib import Path
 from environs import Env
+from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (create_async_engine,
-                                    async_sessionmaker)
+                                    async_sessionmaker,
+                                    AsyncSession)
+
 from .models import Base
 
 env = Env()
@@ -24,11 +27,11 @@ engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-async def create_db():
+async def create_db() -> None:
   async with engine.begin() as conn:
     await conn.run_sync(Base.metadata.create_all)
 
 
-async def get_db():
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
   async with async_session() as session:
     yield session

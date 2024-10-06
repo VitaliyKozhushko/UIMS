@@ -21,7 +21,7 @@ from ..database import get_db
 from ..schemas.patients import PatientCreate, Identifier, Address
 
 
-async def get_appointments():
+async def get_appointments() -> None:
   """
   Получение списка записей на прием
   """

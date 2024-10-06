@@ -3,8 +3,7 @@
 """
 from fastapi import (APIRouter,
                      Depends)
-from typing import (List,
-                    Any)
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
@@ -45,7 +44,7 @@ def transform_patient_appointments(patient: Patients) -> PatientAppointmentsResp
   return PatientAppointmentsResponse(
     id=patient.id,
     fullname=patient_copy.fullname,
-    gender=patient_copy.gender,
+    gender=patient_copy.gender.value,
     birth_date=patient_copy.birth_date,
     appointments=appointments_data
   )

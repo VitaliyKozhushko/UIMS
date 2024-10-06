@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import (Optional,
+                    Union)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import Resources
 
 
-async def get_resource_data(db: AsyncSession, resource_type: str) -> Resources:
+async def get_resource_data(db: AsyncSession, resource_type: str) -> Union[Resources, None]:
   """
   Получение списка ресурсов
   """

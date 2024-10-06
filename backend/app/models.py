@@ -37,7 +37,7 @@ class Appointments(Base):
   """
   Appointments - таблица записей на прием
   Атрибуты:
-      status (str) - статус записи (один из ключей константы STATUSES)
+      status (ENUM) - статус записи (один из ключей константы STATUSES)
       service_details (List[Dict[str, Any]]) - вкл. набор serviceCategory, serviceType, specialty
       date_start (datetime) - дата начала приема
       date_end (datetime) - дата завершения приема
@@ -71,7 +71,7 @@ class Patients(Base):
       patient_id (int) - id пациента для поиска данных о нем (actor.reference)
       identifier (str) - № карты пациента
       fullname (str) - ФИО
-      gender (str) - пол (один из ключей константы GENDERS)
+      gender (ENUM) - пол (один из ключей константы GENDERS)
       birth_date (datetime) - ДР
       address (List[Dict[str, Any]]) - адрес
   """
