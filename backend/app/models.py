@@ -9,8 +9,8 @@ from sqlalchemy import (Integer,
 from sqlalchemy.orm import (relationship,
                             mapped_column,
                             DeclarativeBase)
-from .constants import (statuses,
-                        genders)
+from .constants import (STATUSES,
+                        GENDERS)
 
 
 class Base(DeclarativeBase):
@@ -37,7 +37,7 @@ class Appointments(Base):
   """
   Appointments - таблица записей на прием
   Атрибуты:
-      status (str) - статус записи (один из ключей константы statuses)
+      status (str) - статус записи (один из ключей константы STATUSES)
       service_details (List[Dict[str, Any]]) - вкл. набор serviceCategory, serviceType, specialty
       date_start (datetime) - дата начала приема
       date_end (datetime) - дата завершения приема
@@ -50,7 +50,7 @@ class Appointments(Base):
   __tablename__ = 'appointments'
 
   id = mapped_column(Integer, primary_key=True, index=True)
-  status = mapped_column(Enum(*statuses.keys(), name='status_enum'), nullable=False)
+  status = mapped_column(Enum(STATUSES), name='status_enum', nullable=False)
   service_details = mapped_column(JSON)  # serviceCategory, serviceType, specialty
   date_start = mapped_column(TIMESTAMP(timezone=True))
   date_end = mapped_column(TIMESTAMP(timezone=True))
@@ -71,7 +71,7 @@ class Patients(Base):
       patient_id (int) - id пациента для поиска данных о нем (actor.reference)
       identifier (str) - № карты пациента
       fullname (str) - ФИО
-      gender (str) - пол (один из ключей константы genders)
+      gender (str) - пол (один из ключей константы GENDERS)
       birth_date (datetime) - ДР
       address (List[Dict[str, Any]]) - адрес
   """
@@ -81,7 +81,7 @@ class Patients(Base):
   patient_id = mapped_column(String, unique=True, nullable=False)
   identifier = mapped_column(String)
   fullname = mapped_column(String, nullable=False)
-  gender = mapped_column(Enum(*genders.keys(), name='gender_name', nullable=False))
+  gender = mapped_column(Enum(GENDERS), name='gender_name', nullable=False)
   birth_date = mapped_column(DATE)
   address = mapped_column(JSON)
 

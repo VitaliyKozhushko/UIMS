@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, date
-from typing import Union, List, Optional, Any
+from typing import Union, List, Optional, Any, NoReturn
 from fastapi import HTTPException
 from sqlalchemy import (select,
                         exists,
@@ -240,7 +240,7 @@ def transform_birth_date(birth_date_str: Optional[str]) -> Optional[date]:
   return None
 
 
-def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = None) -> dict[str, Any]:
+def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = None) -> Union[dict[str, Any], NoReturn]:
   """
   Получение данных из json-файла (записи на прием/ данные по пациенту)
   """
@@ -269,8 +269,6 @@ async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: 
     async with httpx.AsyncClient() as client:
       response = await client.get(url)
       response.raise_for_status()
-      print('url:', url)
-      print('response.json():', response.json())
       return response.json()
   except httpx.TimeoutException:
     logger.info("Таймаут при загрузке данных.")

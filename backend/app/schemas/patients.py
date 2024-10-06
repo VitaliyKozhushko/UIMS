@@ -6,15 +6,13 @@ from pydantic import (BaseModel,
                       Field,
                       field_validator,
                       ConfigDict)
-from ..constants import genders
-from .schemas import create_enum, AppointmentsResponse
-
-GenderEnum = create_enum('GenderEnam', genders)
+from ..constants import GENDERS
+from .schemas import AppointmentsResponse
 
 
 class PatientsBase(BaseModel):
   fullname: str
-  gender: GenderEnum
+  gender: GENDERS
   birth_date: Optional[datetime] = None
 
 
@@ -22,8 +20,9 @@ class PatientsResponse(PatientsBase):
   config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
   @field_validator('gender', mode='before')
-  def convert_gender(cls, value):
-    return genders.get(value, 'Не указан')
+  def convert_gender(cls, key: str) -> Optional[str]:
+    gender: Optional[GENDERS] = GENDERS.__members__.get(key)
+    return gender.value if gender else 'Не указан'
 
 
 class PatientAppointmentsResponse(BaseModel):

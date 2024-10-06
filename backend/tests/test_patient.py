@@ -16,7 +16,7 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
 
 
 @pytest.mark.asyncio(loop_scope='module')
-async def test_get_resource_status(client: httpx.AsyncClient):
+async def test_get_resource_status(client: httpx.AsyncClient) -> None:
   """
   Проверяем получение статуса offline
   """
@@ -35,7 +35,7 @@ async def test_get_resource_status(client: httpx.AsyncClient):
 
 
 @pytest.mark.asyncio(loop_scope='module')
-async def test_get_patients_appointments(client: httpx.AsyncClient):
+async def test_get_patients_appointments(client: httpx.AsyncClient) -> None:
   """
   Проверяем получение списка пациентов
   """

@@ -7,19 +7,12 @@ from typing import (Dict,
                     Optional,
                     Type,
                     ClassVar)
-from ..constants import statuses
-
-
-def create_enum(name: str, choices: Dict[str, str]) -> Type[Enum]:
-  return Enum(name, {key: value for key, value in choices.items()})
-
-
-StatusEnum = create_enum('StatusEnum', statuses)
+from ..constants import STATUSES
 
 
 class AppointmentsBase(BaseModel):
   id: int
-  status: StatusEnum
+  status: STATUSES
   date_start: Optional[datetime] = None
   description: Optional[str] = None
 
@@ -28,8 +21,10 @@ class AppointmentsResponse(AppointmentsBase):
   config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
   @field_validator('status', mode='before')
-  def convert_gender(cls, value):
-    return statuses.get(value, 'Статус не получен')
+  def convert_status(cls, key: str) -> str:
+    upd_key = key.replace('-', '_')
+    status: Optional[STATUSES] = STATUSES.__members__.get(upd_key)
+    return status.value if status else 'Статус не получен'
 
 
 class ResourseBase(BaseModel):
