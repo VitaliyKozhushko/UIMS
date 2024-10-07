@@ -6,7 +6,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, date
-from typing import Union, List, Optional, Any, NoReturn
+from typing import Union, List, Optional, Any
 from fastapi import HTTPException
 from sqlalchemy import (select,
                         exists,
@@ -31,8 +31,8 @@ async def get_appointments() -> None:
       resource = result.scalar_one_or_none()
 
       if not resource:
-        result = await db.execute(select(func.count()).select_from(Resources))
-        count = result.scalar_one()
+        result_db = await db.execute(select(func.count()).select_from(Resources))
+        count = result_db.scalar_one()
         if count == 0:
           new_resource = Resources(
             type='Appointment'
@@ -45,6 +45,9 @@ async def get_appointments() -> None:
         data = get_json_data('appointment', resourse_offline)
       else:
         data = await get_online_data(db, resourse_offline)
+
+      if not data:
+        return
 
       resource_id = await check_resources(db, 'Appointment', data.get('meta', {}))
 
@@ -156,15 +159,18 @@ async def get_patient(
   """
   patient = next(
     (
-      item['actor']['reference'] for item in patient_data
-      if isinstance(item, dict) and isinstance(item.get('actor'), dict) and
-         isinstance(item['actor'].get('reference'), str) and
-         item['actor']['reference'].startswith('Patient/')
+      reference
+      for item in patient_data
+      if isinstance(item, dict)
+      for actor in [item.get('actor')]
+      if isinstance(actor, dict)
+      for reference in [actor.get('reference')]
+      if isinstance(reference, str) and reference.startswith('Patient/')
     ),
     None
   )
+
   if not patient:
-    print('Отсутствует id пациента')
     return None
 
   patient_id = patient.removeprefix('Patient/')
@@ -180,6 +186,9 @@ async def get_patient(
     data = get_json_data('patient', resourse_offline, patient_id)
   else:
     data = await get_online_data(db, resourse_offline)
+
+  if not data:
+    return None
 
   try:
     fullname_patient = get_fullname(data.get('name', []))
@@ -252,7 +261,7 @@ def transform_birth_date(birth_date_str: Optional[str]) -> Optional[date]:
   return None
 
 
-def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = None) -> Union[dict[str, Any], NoReturn]:
+def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = None) -> Union[dict[str, Any], None]:
   """
   Получение данных из json-файла (записи на прием/ данные по пациенту)
   """
@@ -260,7 +269,11 @@ def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = Non
   try:
     filename = f'patient-{patient_id}.json' if patient_id else 'appointments-bundle.json'
     with open(os.path.join(backup_directory, filename), 'r', encoding='utf-8') as file:
-      return json.load(file)
+      data = json.load(file)
+      if isinstance(data, dict):
+        return data
+      else:
+        return None
   except FileNotFoundError:
     type_file = 'записями на прием' if type_data == 'appointment' else 'данными о пациенте'
     if offline:
@@ -273,7 +286,8 @@ def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = Non
     return None
 
 
-async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: Optional[str] = None) -> dict[str, Any]:
+async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: Optional[str] = None) -> Union[
+  dict[str, Any], None]:
   """
   Получение данных из онлайн ресурса
   """
@@ -282,7 +296,11 @@ async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: 
     async with httpx.AsyncClient() as client:
       response = await client.get(url)
       response.raise_for_status()
-      return response.json()
+      data = response.json()
+      if isinstance(data, dict):
+        return data
+      else:
+        return {}
   except httpx.TimeoutException:
     logger.info("Таймаут при загрузке данных.")
   except httpx.RequestError as e:
