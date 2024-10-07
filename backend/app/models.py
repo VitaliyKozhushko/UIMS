@@ -1,3 +1,4 @@
+from typing import Any
 from sqlalchemy import (Integer,
                         String,
                         TIMESTAMP,
@@ -18,7 +19,7 @@ class Base(DeclarativeBase):
         """Возвращает имя класса."""
         return self.__class__.__name__
 
-    def get_attributes(self) -> dict:
+    def get_attributes(self) -> dict[str, Any]:
         """Возвращает все атрибуты класса в виде словаря."""
         return {attr: getattr(self, attr) for attr in vars(self)
                 if not attr.startswith('_')}
@@ -41,7 +42,7 @@ class Resources(Base):
     last_update = mapped_column(TIMESTAMP(timezone=True))
     offline = mapped_column(Boolean, nullable=False, default=False)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Resource(id={self.id}, type={self.type}, "
                 f"last_update={self.last_update}, offline={self.offline})>")
 
@@ -78,7 +79,7 @@ class Appointments(Base):
     resource = relationship('Resources')
     patient = relationship('Patients', back_populates='appointments')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Appointment(id={self.id}, status={self.status}, "
                 f"date_start={self.date_start}, description={self.description})>")
 
@@ -106,6 +107,6 @@ class Patients(Base):
 
     appointments = relationship('Appointments', back_populates='patient')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (f"<Patient(id={self.id}, card_number={self.patient_id}, "
                 f"fullname={self.fullname}, gender={self.gender})>")

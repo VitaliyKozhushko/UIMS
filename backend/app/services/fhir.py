@@ -93,8 +93,15 @@ async def create_appointment(
     date_start = transform_start_end(str(resource.get('start', '')))
     date_stop = transform_start_end(str(resource.get('end', '')))
 
+    status = resource.get('status', 'entered_in_error')
+
+    if isinstance(status, str):
+        status = status.upper()
+    else:
+        status = 'ENTERED_IN_ERROR'
+
     return Appointments(
-        status=resource.get('status', 'entered_in_error').upper(),
+        status=status,
         service_details=service_details,
         date_start=date_start,
         date_end=date_stop,
@@ -142,10 +149,10 @@ async def check_resources(db: AsyncSession,
     transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) \
         if date_upd else None
 
-    equal_date = exist_resource.last_update == transform_date
-    if transform_date and exist_resource and equal_date:
-        await db.commit()
-        return None
+    if transform_date and exist_resource:
+        if exist_resource.last_update == transform_date:
+            await db.commit()
+            return None
 
     if exist_resource:
         exist_resource.last_update = transform_date
