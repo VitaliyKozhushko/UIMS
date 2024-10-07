@@ -5,11 +5,10 @@ Revises: cf0e10151f72
 Create Date: 2024-10-03 12:00:03.483636
 
 """
+# mypy: ignore-errors
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision: str = 'fe84ba20e1a9'

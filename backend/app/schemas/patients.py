@@ -1,52 +1,54 @@
-from datetime import datetime
-from typing import List, Optional
+from datetime import datetime, date
+from typing import (List,
+                    Optional,
+                    ClassVar)
 from pydantic import (BaseModel,
                       Field,
-                      field_validator)
-from ..constants import genders
-from .schemas import create_enum, AppointmentsResponse
-
-GenderEnum = create_enum('GenderEnam', genders)
+                      field_validator,
+                      ConfigDict)
+from ..constants import GENDERS
+from .schemas import AppointmentsResponse
 
 
 class PatientsBase(BaseModel):
-  fullname: str
-  gender: GenderEnum
-  birth_date: Optional[datetime] = None
+    fullname: str
+    gender: GENDERS
+    birth_date: Optional[datetime] = None
 
 
 class PatientsResponse(PatientsBase):
-  class Config:
-    from_attributes = True
+    config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
-  @field_validator('gender', mode='before')
-  def convert_gender(cls, value):
-    return genders.get(value, 'Не указан')
+    @staticmethod
+    @field_validator('gender', mode='before')
+    def convert_gender(key: str) -> Optional[str]:
+        gender: Optional[GENDERS] = GENDERS.__members__.get(key.upper())
+        return gender.value if gender else 'Не указан'
 
 
 class PatientAppointmentsResponse(BaseModel):
-  id: int
-  fullname: str
-  gender: str
-  birth_date: Optional[datetime] = None
-  appointments: List[AppointmentsResponse]
+    id: int
+    fullname: str
+    gender: str
+    birth_date: Optional[datetime] = None
+    appointments: List[AppointmentsResponse]
 
 
 class Identifier(BaseModel):
-  value: str
-  system: str
+    value: str
+    system: str
 
 
 class Address(BaseModel):
-  use: Optional[str] = Field(default=None)
-  line: List[str] = Field(default_factory=list)
-  text: Optional[str] = Field(default=None)
+    use: Optional[str] = Field(default=None)
+    line: List[str] = Field(default_factory=list)
+    text: Optional[str] = Field(default=None)
 
 
 class PatientCreate(BaseModel):
-  patient_id: str
-  identifier: Optional[List[Identifier]] = Field(default=None)
-  fullname: str
-  gender: str
-  birth_date: Optional[datetime] = None
-  address: Optional[List[Address]] = Field(default=None)
+    patient_id: str
+    identifier: Optional[List[Identifier]] = Field(default=None)
+    fullname: str
+    gender: str
+    birth_date: Optional[date] = None
+    address: Optional[List[Address]] = Field(default=None)

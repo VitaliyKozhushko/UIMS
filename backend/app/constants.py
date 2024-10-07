@@ -1,19 +1,21 @@
-statuses = {
-  'proposed': 'Ожидание подтверждения',
-  'pending': 'Ожидание подтверждения',
-  'booked': 'Подтверждено',
-  'arrived': 'Пациент прибыл',
-  'fulfilled': 'Запись завершена',
-  'cancelled': 'Запись отменена',
-  'noshow': 'Пациент не пришел на прием',
-  'entered-in-error': 'Статус не получен',
-  'checked-in': 'Пациент в регистратуре',
-  'waitlist': 'Ожидание доступного времени',
-}
+from enum import Enum
 
-genders = {
-  'male': 'М',
-  'female': 'Ж',
-  'other': 'Не указан',
-  'unknown': 'Не указан',
-}
+
+class STATUSES(Enum):
+    PROPOSED = 'Ожидание подтверждения'
+    PENDING = 'В работе'
+    BOOKED = 'Подтверждено'
+    ARRIVED = 'Пациент прибыл'
+    FULFILLED = 'Запись завершена'
+    CANCELLED = 'Запись отменена'
+    NOSHOW = 'Пациент не пришел на прием'
+    ENTERED_IN_ERROR = 'Статус не получен'
+    CHECKED_IN = 'Пациент в регистратуре'
+    WAITLIST = 'Ожидание доступного времени'
+
+
+class GENDERS(Enum):
+    MALE = 'М'
+    FEMALE = 'Ж'
+    OTHER = 'Не указан'
+    UNKNOWN = 'Не известен'

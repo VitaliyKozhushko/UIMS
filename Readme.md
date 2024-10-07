@@ -8,6 +8,7 @@
 3. [Документация по API](#doc_api)
 4. [Инструкция по запуску проекта](#instruction_startup)
 5. [Особенности](#features)
+6. [Тестирование](#testing)
 
 ## Требования <a name="main_requirements"></a>
 
@@ -67,7 +68,7 @@
 
 1. Клонируйте репозиторий
 ```
-git clone https://github.com/VitaliyKozhushko/chat_app
+git clone https://github.com/VitaliyKozhushko/UIMS.git
 ```
 2. Настройте .env файл:
    - для бэка: в папке backend/
@@ -79,7 +80,7 @@ git clone https://github.com/VitaliyKozhushko/chat_app
           ```shell
           pip install -r requirements.txt
           python create_common_env.py
-          uvicorn app.main:app --reload
+          uvicorn app.main:uims_app --reload
           ```
         - перейти в папку frontend
           ```shell
@@ -105,3 +106,10 @@ git clone https://github.com/VitaliyKozhushko/chat_app
     - если какой-либо ресурс недоступен, то загружаем данные из json-файла
   - при получении данных, сохраняем их БД
   - формируем ответ на основании данных из БД и отправляем клиенту
+
+## Тестирование <a name="testing"></a>
+
+- перейти в папку backend/
+     ```shell
+     pytest
+     ```
