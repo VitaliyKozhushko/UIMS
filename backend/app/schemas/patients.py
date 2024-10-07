@@ -47,7 +47,7 @@ class Address(BaseModel):
 
 class PatientCreate(BaseModel):
     patient_id: str
-    identifier: List[Identifier] = Field(default_factory=list)
+    identifier: Optional[List[Identifier]] = Field(default=None)
     fullname: str
     gender: str
     birth_date: Optional[date] = None

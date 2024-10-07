@@ -215,7 +215,7 @@ async def get_patient(
                     system=ident.get('system')
                 )
                 for ident in data.get('identifier', [])
-            ] or [],
+            ] if data.get('identifier') else None,
             fullname=fullname_patient,
             gender=data.get('gender', 'unknown').upper(),
             birth_date=upd_birth_date,
@@ -229,28 +229,29 @@ async def get_patient(
             ] if data.get('address') else None
         )
 
-        identifier1 = ''
-        if patient_create.identifier:
-            result = patient_create.identifier
-            if isinstance(result, list) and len(result) > 0:
-                identifier1 = result[0].value
+        identifier_list = []
+        address_list = []
+        if patient_create.identifier and isinstance(patient_create.identifier, list):
+            identifier_list = patient_create.identifier
+
+        if patient_create.address and isinstance(patient_create.address, list):
+            address_list = patient_create.address
 
         new_patient = Patients(
             patient_id=patient_create.patient_id,
-            identifier=identifier1,
+            identifier=identifier_list[0].value if len(identifier_list) > 0 else None,
             fullname=patient_create.fullname,
             gender=patient_create.gender,
             birth_date=patient_create.birth_date,
-            address = (
-                [addr.model_dump() for addr in patient_create.address]
-                if hasattr(patient_create, 'address') and isinstance(patient_create.address, list)
-                else None
+            address=(
+                [addr.model_dump() for addr in address_list]
+                if len(address_list) > 0 else None
             )
         )
         db.add(new_patient)
         await db.commit()
         return patient_id
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         await db.rollback()
         print(f"Ошибка при сохранении пациента: {e}")
         return None
