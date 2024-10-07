@@ -8,7 +8,7 @@ from app.main import uims_app
 from app.logging_config import logger
 
 
-@pytest_asyncio.fixture(loop_scope='module')
+@pytest_asyncio.fixture(loop_scope='module', name="http_client")
 async def client() -> AsyncIterator[httpx.AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=uims_app),
                            base_url="http://test") as client_async:
@@ -16,13 +16,13 @@ async def client() -> AsyncIterator[httpx.AsyncClient]:
 
 
 @pytest.mark.asyncio(loop_scope='module')
-async def test_get_resource_status(client_async: httpx.AsyncClient) -> None:
+async def test_get_resource_status(http_client: httpx.AsyncClient) -> None:
     """
     Проверяем получение статуса offline
     """
     resource_type = "Appointment"
 
-    response = await client_async.get(f"/resources/{resource_type}")
+    response = await http_client.get(f"/resources/{resource_type}")
 
     logger.info("Response status: %s, data: %s", response.status_code, response.json())
     assert response.status_code == 200
@@ -35,11 +35,11 @@ async def test_get_resource_status(client_async: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio(loop_scope='module')
-async def test_get_patients_appointments(client_async: httpx.AsyncClient) -> None:
+async def test_get_patients_appointments(http_client: httpx.AsyncClient) -> None:
     """
     Проверяем получение списка пациентов
     """
-    response = await client_async.get("/patients/appointments")
+    response = await http_client.get("/patients/appointments")
 
     logger.info("Response status: %s, data: %s", response.status_code, response.json())
     assert response.status_code == 200
