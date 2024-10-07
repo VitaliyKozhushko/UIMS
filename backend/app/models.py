@@ -14,15 +14,24 @@ from .constants import (STATUSES,
 
 
 class Base(DeclarativeBase):
-    pass
+    def get_class_name(self) -> str:
+        """Возвращает имя класса."""
+        return self.__class__.__name__
+
+    def get_attributes(self) -> dict:
+        """Возвращает все атрибуты класса в виде словаря."""
+        return {attr: getattr(self, attr) for attr in vars(self)
+                if not attr.startswith('_')}
 
 
 class Resources(Base):
     """
-    Resources - таблица ресурсов для основных действий. В рамках данного задания исп. 1 ресурс - Appointment
+    Resources - таблица ресурсов для основных действий.
+    В рамках данного задания исп. 1 ресурс - Appointment
     Атрибуты:
         type (str) - тип ресурса (Appointments)
-        last_update (datetime) - дата обновления (запрос Appointment => .meta.lastUpdated)
+        last_update (datetime) - дата обновления
+            (запрос Appointment => .meta.lastUpdated)
         offline (bool) - определяет, откуда загружать данные: online / из json-файла
     """
     __tablename__ = 'resources'
@@ -32,13 +41,18 @@ class Resources(Base):
     last_update = mapped_column(TIMESTAMP(timezone=True))
     offline = mapped_column(Boolean, nullable=False, default=False)
 
+    def __repr__(self):
+        return (f"<Resource(id={self.id}, type={self.type}, "
+                f"last_update={self.last_update}, offline={self.offline})>")
+
 
 class Appointments(Base):
     """
     Appointments - таблица записей на прием
     Атрибуты:
         status (ENUM) - статус записи (один из ключей константы STATUSES)
-        service_details (List[Dict[str, Any]]) - вкл. набор serviceCategory, serviceType, specialty
+        service_details (List[Dict[str, Any]]) - вкл. набор serviceCategory,
+                                                serviceType, specialty
         date_start (datetime) - дата начала приема
         date_end (datetime) - дата завершения приема
         description (str) - описание
@@ -50,18 +64,23 @@ class Appointments(Base):
     __tablename__ = 'appointments'
 
     id = mapped_column(Integer, primary_key=True, index=True)
-    status = mapped_column(Enum(STATUSES), name='status_enum', nullable=False)
-    service_details = mapped_column(JSON)  # serviceCategory, serviceType, specialty
+    status = mapped_column(Enum(STATUSES, name='status_enum'), nullable=False)
+    service_details = mapped_column(JSON)
     date_start = mapped_column(TIMESTAMP(timezone=True))
     date_end = mapped_column(TIMESTAMP(timezone=True))
     description = mapped_column(String)
     participants = mapped_column(JSON)
     priority = mapped_column(Integer)
     resource_id = mapped_column(Integer, ForeignKey('resources.id'))
-    patient_id = mapped_column(String, ForeignKey('patients.patient_id', ondelete='CASCADE'))
+    patient_id = mapped_column(String, ForeignKey('patients.patient_id',
+                                                  ondelete='CASCADE'))
 
     resource = relationship('Resources')
     patient = relationship('Patients', back_populates='appointments')
+
+    def __repr__(self):
+        return (f"<Appointment(id={self.id}, status={self.status}, "
+                f"date_start={self.date_start}, description={self.description})>")
 
 
 class Patients(Base):
@@ -81,8 +100,12 @@ class Patients(Base):
     patient_id = mapped_column(String, unique=True, nullable=False)
     identifier = mapped_column(String)
     fullname = mapped_column(String, nullable=False)
-    gender = mapped_column(Enum(GENDERS), name='gender_name', nullable=False)
+    gender = mapped_column(Enum(GENDERS, name='gender_name'), nullable=False)
     birth_date = mapped_column(DATE)
     address = mapped_column(JSON)
 
     appointments = relationship('Appointments', back_populates='patient')
+
+    def __repr__(self):
+        return (f"<Patient(id={self.id}, card_number={self.patient_id}, "
+                f"fullname={self.fullname}, gender={self.gender})>")

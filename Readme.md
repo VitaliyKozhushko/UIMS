@@ -80,7 +80,7 @@ git clone https://github.com/VitaliyKozhushko/UIMS.git
           ```shell
           pip install -r requirements.txt
           python create_common_env.py
-          uvicorn app.main:app --reload
+          uvicorn app.main:uims_app --reload
           ```
         - перейти в папку frontend
           ```shell

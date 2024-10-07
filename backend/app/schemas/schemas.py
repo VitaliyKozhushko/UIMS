@@ -1,9 +1,9 @@
 from datetime import datetime
+from typing import (Optional,
+                    ClassVar)
 from pydantic import (BaseModel,
                       field_validator,
                       ConfigDict)
-from typing import (Optional,
-                    ClassVar)
 from ..constants import STATUSES
 
 
@@ -17,10 +17,11 @@ class AppointmentsBase(BaseModel):
 class AppointmentsResponse(AppointmentsBase):
     config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
+    @staticmethod
     @field_validator('status', mode='before')
-    def convert_status(cls, key: str) -> str:
+    def convert_status(key: str) -> str:
         upd_key = key.replace('-', '_')
-        status: Optional[STATUSES] = STATUSES.__members__.get(upd_key)
+        status: Optional[STATUSES] = STATUSES.__members__.get(upd_key.upper())
         return status.value if status else 'Статус не получен'
 
 

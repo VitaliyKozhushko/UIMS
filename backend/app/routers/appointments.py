@@ -1,9 +1,9 @@
 """
 Роуты для работы со списком пацинтов с записями
 """
+from typing import List
 from fastapi import (APIRouter,
                      Depends)
-from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
@@ -13,17 +13,20 @@ from ..schemas.schemas import (AppointmentsResponse)
 from ..schemas.patients import (PatientsResponse,
                                 PatientAppointmentsResponse)
 from ..database import get_db
-from ..services.FHIR import get_appointments
+from ..services.fhir import get_appointments
 
 router = APIRouter()
 
 
 @router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse],
             summary='Список пациентов с записями')
-async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)) -> List[PatientAppointmentsResponse]:
+async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)) \
+    -> List[PatientAppointmentsResponse]:
     await get_appointments()
     async with db.begin():
-        patients_result = await db.execute(select(Patients).options(selectinload(Patients.appointments)))
+        patients_result = await db.execute(
+            select(Patients)
+            .options(selectinload(Patients.appointments)))
         patients = patients_result.scalars().fetchall()
 
         result = [transform_patient_appointments(patient) for patient in patients]
@@ -54,6 +57,7 @@ def transform_appointment(appointment: Appointments) -> AppointmentsResponse:
     """
     Преобразование записи в Pydantic модель с обработкой статуса
     """
-    appointment_copy = AppointmentsResponse.model_validate(appointment, from_attributes=True)
+    appointment_copy = (AppointmentsResponse
+                        .model_validate(appointment, from_attributes=True))
 
     return appointment_copy

@@ -1,12 +1,12 @@
 """
 Модуль для получения данных о пациентах и записях и сохранения их в БД
 """
-import httpx
 import json
 import os
 from pathlib import Path
 from datetime import datetime, date
 from typing import Union, List, Optional, Any
+import httpx
 from fastapi import HTTPException
 from sqlalchemy import (select,
                         exists,
@@ -27,11 +27,13 @@ async def get_appointments() -> None:
     """
     async for db in get_db():
         try:
-            result = await db.execute(select(Resources).where(Resources.type == 'Appointment'))
+            result = await db.execute(select(Resources)
+                                      .where(Resources.type == 'Appointment'))
             resource = result.scalar_one_or_none()
 
             if not resource:
-                result_db = await db.execute(select(func.count()).select_from(Resources))
+                result_db = await db.execute(select(func.count()) # pylint: disable=not-callable
+                                             .select_from(Resources))
                 count = result_db.scalar_one()
                 if count == 0:
                     new_resource = Resources(
@@ -61,22 +63,25 @@ async def get_appointments() -> None:
             for item in data.get('entry', []):
                 json_resource = item.get('resource')
                 if json_resource:
-                    patient_id = await get_patient(db, json_resource['participant'] if json_resource else {},
-                                                   resourse_offline)
+                    patient_id = await get_patient(db, json_resource['participant']
+                        if json_resource else {}, resourse_offline)
                     if patient_id:
-                        new_appointment = await create_appointment(json_resource, resource_id, patient_id)
+                        new_appointment = await create_appointment(json_resource,
+                                                                   resource_id,
+                                                                   patient_id)
                         db.add(new_appointment)
 
             await db.commit()
             print('Данные сохранены')
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-exception-caught
             await db.rollback()
             print(f"Ошибка при сохранении записи: {e}")
         finally:
             await db.close()
 
 
-async def create_appointment(resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]],
+async def create_appointment(resource: dict[str,
+    Union[str, int, List[dict[str, Any]], dict[str, Any]]],
                              resource_id: int,
                              patient_id: str) -> Appointments:
     """
@@ -87,7 +92,7 @@ async def create_appointment(resource: dict[str, Union[str, int, List[dict[str, 
     date_stop = transform_start_end(str(resource.get('end', '')))
 
     return Appointments(
-        status=resource.get('status', 'entered-in-error'),
+        status=resource.get('status', 'entered_in_error').upper(),
         service_details=service_details,
         date_start=date_start,
         date_end=date_stop,
@@ -99,8 +104,9 @@ async def create_appointment(resource: dict[str, Union[str, int, List[dict[str, 
     )
 
 
-def extract_service_details(resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]) -> list[
-        dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]]:
+def extract_service_details(resource: dict[str,
+    Union[str, int, List[dict[str, Any]], dict[str, Any]]]) -> list[
+    dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]]:
     """Формирование данных о враче, специализации"""
     service_details = []
     if 'serviceCategory' in resource:
@@ -112,26 +118,31 @@ def extract_service_details(resource: dict[str, Union[str, int, List[dict[str, A
     return service_details
 
 
-def transform_start_end(date_str: str) -> Union[datetime, str]:
+def transform_start_end(date_str: str) -> Optional[datetime]:
     """Преобразование даты в TIMESTAMP"""
     if date_str:
         return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-    return date_str
+    return None
 
 
-async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str, str], dict[str, Any]]) -> Optional[
-        int]:
+async def check_resources(db: AsyncSession,
+                          resource: str,
+                          meta: Union[dict[str, str], dict[str, Any]]) -> Optional[int]:
     """
-    Проверка на существование типа ресурса в БД и добавление запрашиваемого ресурса в БД при его отсутствии
+    Проверка на существование типа ресурса в БД
+    и добавление запрашиваемого ресурса в БД при его отсутствии
     """
     date_upd = meta.get('lastUpdated')
     result = await db.execute(
         select(Resources).where(Resources.type == resource)
     )
     exist_resource: Optional[Resources] = result.scalars().first()
-    transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
+    transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) \
+        if date_upd else None
 
-    if transform_date and exist_resource and exist_resource.last_update == transform_date:
+    if (transform_date and
+        exist_resource and
+        exist_resource.last_update == transform_date):
         await db.commit()
         return None
 
@@ -139,15 +150,16 @@ async def check_resources(db: AsyncSession, resource: str, meta: Union[dict[str,
         exist_resource.last_update = transform_date
         await db.commit()
         return int(exist_resource.id)
-    else:
-        new_resource = Resources(
-            type=resource,
-            last_update=datetime.fromisoformat(date_upd.replace("Z", "+00:00")) if date_upd else None
-        )
-        db.add(new_resource)
-        await db.commit()
 
-        return int(new_resource.id)
+    new_resource = Resources(
+        type=resource,
+        last_update=datetime.fromisoformat(date_upd.replace("Z", "+00:00"))
+        if date_upd else None
+    )
+    db.add(new_resource)
+    await db.commit()
+
+    return int(new_resource.id)
 
 
 async def get_patient(
@@ -203,9 +215,9 @@ async def get_patient(
                     system=ident.get('system')
                 )
                 for ident in data.get('identifier', [])
-            ] if data.get('identifier') else None,
+            ] or [],
             fullname=fullname_patient,
-            gender=data.get('gender', 'unknown'),
+            gender=data.get('gender', 'unknown').upper(),
             birth_date=upd_birth_date,
             address=[
                 Address(
@@ -217,18 +229,28 @@ async def get_patient(
             ] if data.get('address') else None
         )
 
+        identifier1 = ''
+        if patient_create.identifier:
+            result = patient_create.identifier
+            if isinstance(result, list) and len(result) > 0:
+                identifier1 = result[0].value
+
         new_patient = Patients(
             patient_id=patient_create.patient_id,
-            identifier=patient_create.identifier[0].value if patient_create.identifier else None,
+            identifier=identifier1,
             fullname=patient_create.fullname,
             gender=patient_create.gender,
             birth_date=patient_create.birth_date,
-            address=[addr.model_dump() for addr in patient_create.address] if patient_create.address else None
+            address = (
+                [addr.model_dump() for addr in patient_create.address]
+                if hasattr(patient_create, 'address') and isinstance(patient_create.address, list)
+                else None
+            )
         )
         db.add(new_patient)
         await db.commit()
         return patient_id
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-exception-caught
         await db.rollback()
         print(f"Ошибка при сохранении пациента: {e}")
         return None
@@ -262,37 +284,51 @@ def transform_birth_date(birth_date_str: Optional[str]) -> Optional[date]:
     return None
 
 
-def get_json_data(type_data: str, offline: bool, patient_id: Optional[str] = None) -> Union[dict[str, Any], None]:
+def get_json_data(type_data: str,
+                  offline: bool,
+                  patient_id: Optional[str] = None) -> Union[dict[str, Any], None]:
     """
     Получение данных из json-файла (записи на прием/ данные по пациенту)
     """
     backup_directory = Path(__file__).resolve().parent.parent / 'backup'
     try:
-        filename = f'patient-{patient_id}.json' if patient_id else 'appointments-bundle.json'
-        with open(os.path.join(backup_directory, filename), 'r', encoding='utf-8') as file:
+        filename = f'patient-{patient_id}.json'
+        if not patient_id:
+            filename = 'appointments-bundle.json'
+        with open(os.path.join(backup_directory, filename),
+                  'r', encoding='utf-8') as file:
             data = json.load(file)
             if isinstance(data, dict):
                 return data
-            else:
-                return None
-    except FileNotFoundError:
-        type_file = 'записями на прием' if type_data == 'appointment' else 'данными о пациенте'
+            return None
+    except FileNotFoundError as err:
+        type_file = 'записями на прием'
+        if type_data != 'appointment':
+            type_file = 'данными о пациенте'
         if offline:
-            raise HTTPException(status_code=500, detail=f"Файл с {type_file} не найден.")
-        else:
-            raise HTTPException(status_code=500, detail=f"Сторонний ресурс недоступен, файл с {type_file} не найден.")
-
-    except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Файл с {type_file} не найден."
+            ) from err
+        raise HTTPException(
+            status_code=500,
+            detail=f"Сторонний ресурс недоступен, файл с {type_file} не найден."
+        ) from err
+    except Exception as e: # pylint: disable=broad-exception-caught
         print(f'Ошибка {e}')
         return None
 
 
-async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: Optional[str] = None) -> Union[
-        dict[str, Any], None]:
+async def get_online_data(db: AsyncSession,
+                          resourse_offline: bool,
+                          patient_id: Optional[str] = None) \
+        -> Union[dict[str, Any], None]:
     """
     Получение данных из онлайн ресурса
     """
-    url = 'https://hapi.fhir.org/baseR4/Appointment?_count=10' if not patient_id else f'http://hapi.fhir.org/baseR4/Patient/{patient_id}'
+    url = 'https://hapi.fhir.org/baseR4/Appointment?_count=10'
+    if patient_id:
+        url = f'http://hapi.fhir.org/baseR4/Patient/{patient_id}'
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
@@ -300,14 +336,13 @@ async def get_online_data(db: AsyncSession, resourse_offline: bool, patient_id: 
             data = response.json()
             if isinstance(data, dict):
                 return data
-            else:
-                return {}
+            return {}
     except httpx.TimeoutException:
         logger.info("Таймаут при загрузке данных.")
     except httpx.RequestError as e:
-        logger.info(f"Ошибка сети: {e}")
+        logger.info("Ошибка сети: %s", e)
     except httpx.HTTPStatusError as e:
-        logger.info(f"HTTP ошибка: {e.response.status_code} - {e.response.text}")
+        logger.info("HTTP ошибка: %s - %s", e.response.status_code, e.response.text)
 
     if not patient_id:
         await db.execute(delete(Patients))

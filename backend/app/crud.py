@@ -5,7 +5,8 @@ from sqlalchemy.future import select
 from .models import Resources
 
 
-async def get_resource_data(db: AsyncSession, resource_type: str) -> Union[Resources, None]:
+async def get_resource_data(db: AsyncSession,
+                            resource_type: str) -> Union[Resources, None]:
     """
     Получение списка ресурсов
     """
@@ -20,7 +21,9 @@ async def get_resource_data(db: AsyncSession, resource_type: str) -> Union[Resou
         raise
 
 
-async def update_offline_status(db: AsyncSession, resource_type: str, offline_status: bool) -> Optional[Resources]:
+async def update_offline_status(db: AsyncSession,
+                                resource_type: str,
+                                offline_status: bool) -> Optional[Resources]:
     """
     Вкл./выкл. симуляции обрыва сети
     """

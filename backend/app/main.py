@@ -14,16 +14,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info('Application startup complete.')
     yield
     logger.info('Application shutdown initiated.')
+    _ = app
 
 
-app = FastAPI(lifespan=lifespan)
+uims_app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
 
-app.add_middleware(
+uims_app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
@@ -31,5 +32,5 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-app.include_router(appointments.router)
-app.include_router(config.router)
+uims_app.include_router(appointments.router)
+uims_app.include_router(config.router)

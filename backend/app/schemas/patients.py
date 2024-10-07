@@ -19,9 +19,10 @@ class PatientsBase(BaseModel):
 class PatientsResponse(PatientsBase):
     config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
+    @staticmethod
     @field_validator('gender', mode='before')
-    def convert_gender(cls, key: str) -> Optional[str]:
-        gender: Optional[GENDERS] = GENDERS.__members__.get(key)
+    def convert_gender(key: str) -> Optional[str]:
+        gender: Optional[GENDERS] = GENDERS.__members__.get(key.upper())
         return gender.value if gender else 'Не указан'
 
 
@@ -46,7 +47,7 @@ class Address(BaseModel):
 
 class PatientCreate(BaseModel):
     patient_id: str
-    identifier: Optional[List[Identifier]] = Field(default=None)
+    identifier: List[Identifier] = Field(default_factory=list)
     fullname: str
     gender: str
     birth_date: Optional[date] = None

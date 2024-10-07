@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
-from environs import Env
 from typing import AsyncGenerator
+from environs import Env
 from sqlalchemy.ext.asyncio import (create_async_engine,
                                     async_sessionmaker,
                                     AsyncSession)
-
 from .models import Base
 
 env = Env()
@@ -20,7 +19,8 @@ else:
 
 env.read_env(".env")
 
-DATABASE_URL = f'postgresql+asyncpg://{env("USER_DB")}:{env("PASSWD_DB")}@{env("HOST_DB")}:{env("PORT_DB")}/{env("NAME_DB")}'
+DATABASE_URL = (f'postgresql+asyncpg://{env("USER_DB")}:{env("PASSWD_DB")}@'
+                f'{env("HOST_DB")}:{env("PORT_DB")}/{env("NAME_DB")}')
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
