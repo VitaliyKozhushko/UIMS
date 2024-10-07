@@ -21,7 +21,7 @@ router = APIRouter()
 @router.get("/patients/appointments", response_model=List[PatientAppointmentsResponse],
             summary='Список пациентов с записями')
 async def get_all_patients_appointments(db: AsyncSession = Depends(get_db)) \
-    -> List[PatientAppointmentsResponse]:
+        -> List[PatientAppointmentsResponse]:
     await get_appointments()
     async with db.begin():
         patients_result = await db.execute(

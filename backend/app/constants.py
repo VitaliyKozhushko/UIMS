@@ -16,6 +16,6 @@ class STATUSES(Enum):
 
 class GENDERS(Enum):
     MALE = 'М'
-    FEMALE= 'Ж'
+    FEMALE = 'Ж'
     OTHER = 'Не указан'
     UNKNOWN = 'Не известен'

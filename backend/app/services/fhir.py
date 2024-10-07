@@ -32,7 +32,7 @@ async def get_appointments() -> None:
             resource = result.scalar_one_or_none()
 
             if not resource:
-                result_db = await db.execute(select(func.count()) # pylint: disable=not-callable
+                result_db = await db.execute(select(func.count())  # pylint: disable=not-callable
                                              .select_from(Resources))
                 count = result_db.scalar_one()
                 if count == 0:
@@ -63,8 +63,10 @@ async def get_appointments() -> None:
             for item in data.get('entry', []):
                 json_resource = item.get('resource')
                 if json_resource:
-                    patient_id = await get_patient(db, json_resource['participant']
-                        if json_resource else {}, resourse_offline)
+                    patient_id = await get_patient(
+                        db,
+                        json_resource['participant'] if json_resource else {},
+                        resourse_offline)
                     if patient_id:
                         new_appointment = await create_appointment(json_resource,
                                                                    resource_id,
@@ -73,17 +75,17 @@ async def get_appointments() -> None:
 
             await db.commit()
             print('Данные сохранены')
-        except Exception as e: # pylint: disable=broad-exception-caught
+        except Exception as e:  # pylint: disable=broad-exception-caught
             await db.rollback()
             print(f"Ошибка при сохранении записи: {e}")
         finally:
             await db.close()
 
 
-async def create_appointment(resource: dict[str,
-    Union[str, int, List[dict[str, Any]], dict[str, Any]]],
-                             resource_id: int,
-                             patient_id: str) -> Appointments:
+async def create_appointment(
+        resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]],
+        resource_id: int,
+        patient_id: str) -> Appointments:
     """
     Создание новой записи на приём
     """
@@ -104,9 +106,9 @@ async def create_appointment(resource: dict[str,
     )
 
 
-def extract_service_details(resource: dict[str,
-    Union[str, int, List[dict[str, Any]], dict[str, Any]]]) -> list[
-    dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]]:
+def extract_service_details(
+    resource: dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]
+) -> list[dict[str, Union[str, int, List[dict[str, Any]], dict[str, Any]]]]:
     """Формирование данных о враче, специализации"""
     service_details = []
     if 'serviceCategory' in resource:
@@ -140,9 +142,8 @@ async def check_resources(db: AsyncSession,
     transform_date = datetime.fromisoformat(date_upd.replace("Z", "+00:00")) \
         if date_upd else None
 
-    if (transform_date and
-        exist_resource and
-        exist_resource.last_update == transform_date):
+    equal_date = exist_resource.last_update == transform_date
+    if transform_date and exist_resource and equal_date:
         await db.commit()
         return None
 
@@ -315,7 +316,7 @@ def get_json_data(type_data: str,
             status_code=500,
             detail=f"Сторонний ресурс недоступен, файл с {type_file} не найден."
         ) from err
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f'Ошибка {e}')
         return None
 
