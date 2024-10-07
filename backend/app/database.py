@@ -14,9 +14,9 @@ ENVIRONMENT = env('ENVIRONMENT', default='local')
 BASE_DIR = Path(__file__).resolve().parent
 
 if ENVIRONMENT == 'docker':
-  env.read_env(os.path.join(BASE_DIR, '.env.backend.docker'))
+    env.read_env(os.path.join(BASE_DIR, '.env.backend.docker'))
 else:
-  env.read_env(os.path.join(BASE_DIR, '.env'))
+    env.read_env(os.path.join(BASE_DIR, '.env'))
 
 env.read_env(".env")
 
@@ -28,10 +28,10 @@ async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
 async def create_db() -> None:
-  async with engine.begin() as conn:
-    await conn.run_sync(Base.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-  async with async_session() as session:
-    yield session
+    async with async_session() as session:
+        yield session
